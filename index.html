@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training vs. Inference | Interactive AI Learning Lab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="badge">Learning Lab</span>
+        <h1>Training vs. Inference</h1>
+        <p class="subtitle">Demystifying "How AI Actually Works" with Zero Black Boxes</p>
+      </div>
+
+      <!-- Stage Selector Tabs -->
+      <nav class="stage-nav" aria-label="Learning Stages">
+        <button class="stage-btn active" data-stage="1" id="tab-stage-1">
+          <span class="step-num">Stage 1</span>
+          <span class="step-title">Crawl: Tally Marks</span>
+          <span class="step-desc">Naive Bayes Intuition</span>
+        </button>
+        <button class="stage-btn" data-stage="2" id="tab-stage-2">
+          <span class="step-num">Stage 2</span>
+          <span class="step-title">Walk: Dials & Weights</span>
+          <span class="step-desc">Logistic Regression & SGD</span>
+        </button>
+        <button class="stage-btn" data-stage="3" id="tab-stage-3">
+          <span class="step-num">Stage 3</span>
+          <span class="step-title">Jog: The Neuron</span>
+          <span class="step-desc">Perceptron Architecture</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Stage Banner / Mental Model Banner -->
+    <section class="stage-banner" id="stage-banner">
+      <div class="banner-content">
+        <div class="banner-badge" id="banner-badge">Stage 1: Crawl</div>
+        <div class="banner-text">
+          <h2 id="banner-title">Counting Observations: Why Data Matters</h2>
+          <p id="banner-desc">
+            Words are simply counted across positive and negative experiences. 
+            Before machine learning can predict, it starts by systematically organizing past observations.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workspace (Split View) -->
+    <main class="workspace-grid">
+      <!-- Left Panel: The Model's Brain (Inspectable State) -->
+      <section class="panel brain-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">🧠</span>
+            <h2>The Model's Brain (Internal Memory)</h2>
+          </div>
+          <div class="panel-actions" id="brain-panel-actions">
+            <!-- Dynamic search / sort buttons -->
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <!-- Stage 1 View: Frequency Tallies -->
+          <div class="brain-view active" id="brain-view-stage-1">
+            <div class="info-callout">
+              <strong>How it stores memory:</strong> A simple frequency count table for each observed word in the training set (10 positive reviews, 10 negative reviews).
+            </div>
+            <div class="table-container">
+              <table class="data-table" id="tally-table">
+                <thead>
+                  <tr>
+                    <th>Word</th>
+                    <th class="num-col">Positive Hits (+)</th>
+                    <th class="num-col">Negative Hits (-)</th>
+                    <th>Tendency</th>
+                  </tr>
+                </thead>
+                <tbody id="tally-table-body">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Stage 2 View: Weights & Biases -->
+          <div class="brain-view" id="brain-view-stage-2">
+            <div class="info-callout">
+              <strong>How it stores memory:</strong> Each word has a dial (a floating-point numerical <em>weight</em>), plus an overall <em>bias</em> dial. 
+              <strong>Untrained:</strong> all dials are exactly <code>0.00</code>. 
+              <strong>Training:</strong> nudges dials up or down based on errors.
+            </div>
+            
+            <div class="weights-summary-bar">
+              <div class="summary-stat">
+                <span class="stat-label">Bias dial (\(b\)):</span>
+                <span class="stat-val font-mono" id="stat-bias">0.000</span>
+              </div>
+              <div class="summary-stat">
+                <span class="stat-label">Model Status:</span>
+                <span class="status-badge" id="stat-model-status">Untrained</span>
+              </div>
+              <div class="summary-stat">
+                <span class="stat-label">Trained Epochs:</span>
+                <span class="stat-val font-mono" id="stat-epochs">0</span>
+              </div>
+            </div>
+
+            <div class="table-controls">
+              <input type="text" id="weight-filter" placeholder="Filter words..." class="input-search">
+              <div class="btn-group">
+                <button class="btn btn-xs" id="sort-weight-desc">Highest (+)</button>
+                <button class="btn btn-xs" id="sort-weight-asc">Lowest (-)</button>
+                <button class="btn btn-xs" id="sort-weight-alpha">A-Z</button>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table" id="weights-table">
+                <thead>
+                  <tr>
+                    <th>Word</th>
+                    <th class="num-col">Weight Value (\(w\))</th>
+                    <th>Influence</th>
+                  </tr>
+                </thead>
+                <tbody id="weights-table-body">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Stage 3 View: Graphical Single-Neuron Diagram -->
+          <div class="brain-view" id="brain-view-stage-3">
+            <div class="info-callout">
+              <strong>The Architecture:</strong> A single artificial neuron (Perceptron). It takes input word signals (\(x_i\)), multiplies each by its learned weight (\(w_i\)), sums them with the bias, and squashes the result through a Sigmoid activation curve to output a probability.
+            </div>
+            
+            <div class="neuron-visual-container">
+              <svg id="neuron-svg" viewBox="0 0 760 480" preserveAspectRatio="xMidYMid meet">
+                <!-- SVG dynamically drawn in JS -->
+              </svg>
+            </div>
+            <div class="neuron-caption" id="neuron-caption">
+              Type or select a sentence on the right to see inputs and calculations travel through the neuron in real time.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: The Interactive Playground -->
+      <section class="panel playground-panel">
+        <!-- Section A: Test Playground (Inference Mode) -->
+        <div class="playground-section">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="icon">⚡</span>
+              <h2>Test Playground (Inference Mode)</h2>
+            </div>
+          </div>
+
+          <div class="section-body">
+            <label class="field-label" for="test-input">Test Sentence:</label>
+            <div class="input-row">
+              <input type="text" id="test-input" value="great service and friendly staff" placeholder="Type a sentence to run inference..." autocomplete="off">
+              <button class="btn btn-primary" id="btn-run-inference">Evaluate</button>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="presets-row">
+              <span class="presets-label">Preset Tests:</span>
+              <button class="btn-preset" data-text="great service and friendly staff">"great service and friendly staff"</button>
+              <button class="btn-preset" data-text="terrible quality broke on day one">"terrible quality broke on day one"</button>
+              <button class="btn-preset" data-text="quick delivery but rude support">"quick delivery but rude support"</button>
+              <button class="btn-preset" data-text="super clean design and wonderful speed">"super clean design and wonderful speed"</button>
+              <button class="btn-preset" data-text="completely useless waste of money">"completely useless waste of money"</button>
+            </div>
+
+            <!-- Inference Results & Gauge -->
+            <div class="results-card">
+              <div class="gauge-container">
+                <div class="gauge-labels">
+                  <span class="label-neg">Negative (0)</span>
+                  <span class="label-score" id="result-percent-label">50.0%</span>
+                  <span class="label-pos">Positive (1)</span>
+                </div>
+                <div class="gauge-track">
+                  <div class="gauge-fill" id="gauge-fill" style="width: 50%;"></div>
+                  <div class="gauge-marker" id="gauge-marker" style="left: 50%;"></div>
+                </div>
+                <div class="prediction-verdict" id="prediction-verdict">
+                  <span class="verdict-tag neutral">Neutral Coin Toss (50%)</span>
+                </div>
+              </div>
+
+              <!-- Mathematical Breakdown -->
+              <div class="math-breakdown-card">
+                <div class="math-title">Step-by-Step Mathematical Arithmetic:</div>
+                <div class="math-content font-mono" id="math-breakdown">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section B: Training Control Center -->
+        <div class="playground-section training-section">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="icon">⚙️</span>
+              <h2>Training Control Center</h2>
+            </div>
+            <span class="status-pill" id="training-status-pill">Ready to Train</span>
+          </div>
+
+          <div class="section-body">
+            <p class="training-intro">
+              AI doesn't "know" English — it turns words into numbers and updates dials to minimize prediction mistakes across observations.
+            </p>
+
+            <div class="training-cta-box">
+              <div class="training-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Training Set:</span>
+                  <span class="meta-val">20 Reviews (10 Pos / 10 Neg)</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Learning Rate (\(\alpha\)):</span>
+                  <span class="meta-val font-mono">0.15</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Model Weights:</span>
+                  <span class="meta-val" id="meta-weights-state">All 0.0 (Untrained)</span>
+                </div>
+              </div>
+
+              <div class="cta-actions">
+                <button class="btn btn-accent btn-large" id="btn-open-training">
+                  <span>🚀 Open Training Session</span>
+                </button>
+                <button class="btn btn-secondary" id="btn-reset-weights" title="Set all weights and bias back to 0.0">
+                  <span>↺ Reset Weights</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+  </div>
+
+  <!-- Training Modal / Overlay -->
+  <dialog class="training-modal" id="training-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">Interactive Training Loop</span>
+          <h3>Stochastic Gradient Descent (SGD) in Action</h3>
+        </div>
+        <button class="btn-close" id="btn-close-modal" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Progress & Loss Tracker -->
+        <div class="modal-stats-grid">
+          <div class="mstat-card">
+            <span class="mstat-title">Current Epoch</span>
+            <span class="mstat-value font-mono" id="modal-epoch-count">0 / 20</span>
+          </div>
+          <div class="mstat-card">
+            <span class="mstat-title">Sample Progress</span>
+            <span class="mstat-value font-mono" id="modal-sample-count">0 / 20</span>
+          </div>
+          <div class="mstat-card">
+            <span class="mstat-title">Current Mean Error</span>
+            <span class="mstat-value font-mono" id="modal-error-val">0.500</span>
+          </div>
+          <div class="mstat-card">
+            <span class="mstat-title">Loop Status</span>
+            <span class="mstat-value status-badge" id="modal-loop-status">Idle</span>
+          </div>
+        </div>
+
+        <!-- Live Step Inspector -->
+        <div class="step-inspector-card">
+          <h4>Active Training Sample:</h4>
+          <div class="sample-review-box">
+            <span class="sample-target-badge" id="sample-target-badge">Target: 1 (Positive)</span>
+            <div class="sample-text font-serif" id="sample-text">"great service and friendly staff"</div>
+          </div>
+
+          <div class="step-calc-grid">
+            <div class="calc-box">
+              <span class="calc-label">1. Predict Score (\(P\))</span>
+              <div class="calc-formula font-mono" id="calc-step-pred">P = Sigmoid(z) = 0.500</div>
+            </div>
+            <div class="calc-box">
+              <span class="calc-label">2. Calculate Mistake (\(\text{error}\))</span>
+              <div class="calc-formula font-mono" id="calc-step-error">error = 1.0 - 0.500 = +0.500</div>
+            </div>
+            <div class="calc-box">
+              <span class="calc-label">3. Adjustment (\(\Delta w = \alpha \cdot \text{error}\))</span>
+              <div class="calc-formula font-mono" id="calc-step-delta">Δw = 0.15 × (+0.500) = +0.075</div>
+            </div>
+          </div>
+
+          <div class="adjusted-words-list" id="adjusted-words-list">
+            <!-- Badges showing updated words -->
+          </div>
+        </div>
+
+        <!-- Real-time Training Loss Chart -->
+        <div class="loss-chart-container">
+          <div class="chart-header">
+            <span>Average Training Loss Over Epochs (Error Dropping to Zero)</span>
+          </div>
+          <canvas id="loss-canvas" width="680" height="120"></canvas>
+        </div>
+      </div>
+
+      <!-- Modal Footer Controls -->
+      <div class="modal-footer">
+        <div class="footer-left">
+          <label class="speed-control">
+            <span>Speed:</span>
+            <input type="range" id="training-speed" min="10" max="400" value="70" step="10">
+            <span id="speed-label">Fast</span>
+          </label>
+        </div>
+        <div class="footer-actions">
+          <button class="btn btn-secondary" id="btn-modal-step">
+            ▶ Step 1 Example
+          </button>
+          <button class="btn btn-primary" id="btn-modal-run">
+            ⚡ Run All Epochs
+          </button>
+          <button class="btn btn-danger" id="btn-modal-reset">
+            ↺ Reset Weights
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

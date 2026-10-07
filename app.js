@@ -1,892 +1,435 @@
-// ==========================================
-// Fixed Dataset (10 Positive, 10 Negative)
-// ==========================================
-const TRAINING_DATA = [
-  // Positive (1)
-  { text: "great service and friendly staff", label: 1 },
-  { text: "awesome product loved the experience", label: 1 },
-  { text: "quick delivery and excellent quality", label: 1 },
-  { text: "very helpful support team", label: 1 },
-  { text: "loved the clean design and speed", label: 1 },
-  { text: "super happy with this purchase", label: 1 },
-  { text: "fantastic performance and reliable", label: 1 },
-  { text: "easy to use and highly recommended", label: 1 },
-  { text: "impressive results in record time", label: 1 },
-  { text: "wonderful experience will buy again", label: 1 },
+// =======================================================================
+// TRAINING VS. INFERENCE LEARNING LAB
+// Core Engine implementing Module 1 (Reframed 3-View Hardware Architecture)
+// =======================================================================
 
-  // Negative (0)
-  { text: "terrible experience rude customer support", label: 0 },
-  { text: "awful quality broke on day one", label: 0 },
-  { text: "horrible service very slow delivery", label: 0 },
-  { text: "poor build and disappointing waste", label: 0 },
-  { text: "waste of money completely broken", label: 0 },
-  { text: "bad customer service very unhelpful", label: 0 },
-  { text: "worst product ever completely useless", label: 0 },
-  { text: "annoying glitches and constant errors", label: 0 },
-  { text: "slow and frustrating will not return", label: 0 },
-  { text: "disappointing outcome highly frustrated", label: 0 }
-];
-
-// Helper: Tokenize sentence into unique lowercase clean words
-function tokenize(sentence) {
-  return sentence
+// --- Tokenization Helper ---
+function tokenize(text) {
+  return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/[^a-z0-9\s]/g, '')
     .split(/\s+/)
-    .filter(word => word.length > 0);
+    .filter(Boolean);
 }
 
-// Math Helper: Sigmoid squashing function
-function sigmoid(z) {
-  // clamp z to avoid numerical overflow
-  if (z > 40) return 1.0;
-  if (z < -40) return 0.0;
-  return 1 / (1 + Math.exp(-z));
-}
+// --- Module 1 Datasets & Test Scenarios ---
+const CRAWL_DATASETS = {
+  step1: {
+    diskFiles: [],
+    tests: [
+      { id: "s1-a", text: "The product arrived fast and works great." },
+      { id: "s1-b", text: "The product was broken and customer service was awful." }
+    ]
+  },
+  step2: {
+    diskFiles: [
+      { text: "The service was great and fast.", label: "positive" },
+      { text: "The service was terrible and slow.", label: "negative" }
+    ],
+    tests: [
+      { id: "s2-1", text: "They have great communication." },
+      { id: "s2-2", text: "Shipping was incredibly slow." },
+      { id: "s2-3", text: "I really loved the experience." },
+      { id: "s2-4", text: "The package arrived broken and damaged." }
+    ]
+  },
+  step3: {
+    diskFiles: [
+      // 5 Positive
+      { text: "The service was great and fast.", label: "positive" },
+      { text: "I really loved the wonderful experience.", label: "positive" },
+      { text: "Friendly support team resolved my issue immediately.", label: "positive" },
+      { text: "Customer service was excelente and solved my issue fast.", label: "positive" },
+      { text: "The build quality is truly magnifique.", label: "positive" },
+      // 5 Negative
+      { text: "The service was terrible and slow.", label: "negative" },
+      { text: "The package arrived broken and damaged.", label: "negative" },
+      { text: "Awful quality broke immediately on day one.", label: "negative" },
+      { text: "Completely useless product and rude customer support.", label: "negative" },
+      { text: "Disappointing experience with constant crashes.", label: "negative" }
+    ],
+    tests: [
+      { id: "s3-1", text: "They have great communication." },
+      { id: "s3-2", text: "Shipping was incredibly slow." },
+      { id: "s3-3", text: "I really loved the experience." },
+      { id: "s3-4", text: "The package arrived broken and damaged." }
+    ]
+  }
+};
 
-// ==========================================
-// Application State
-// ==========================================
-class LearningLabState {
+// =======================================================================
+// State Controller for Module 1 (Hardware & Memory)
+// =======================================================================
+class CrawlHardwareLab {
   constructor() {
-    this.currentStage = 1; // 1, 2, or 3
-    this.vocabulary = new Set();
-    this.tallyMap = new Map(); // word -> { posCount: number, negCount: number }
-    
-    // Weights & Model parameters
-    this.weights = new Map(); // word -> float
-    this.bias = 0.0;
-    this.learningRate = 0.15;
-    
-    // Training runtime status
-    this.epochsTrained = 0;
-    this.targetEpochs = 20;
-    this.currentEpoch = 0;
-    this.currentSampleIndex = 0;
-    this.isTrainingRunning = false;
-    this.lossHistory = [];
-    
-    this.buildVocabularyAndTallies();
-    this.resetWeights();
+    this.currentStep = 1; // 1, 2, or 3
+    this.modelCompiledOnDisk = false;
+    this.modelLoadedInRAM = false;
+    this.compiledModelArtifact = null; // { [token]: { pos: N, neg: N } }
+    this.activeRamLookup = {}; // Active lookup table in RAM
+    this.activeTestSentence = "";
+    this.activeTestId = "";
   }
 
-  buildVocabularyAndTallies() {
-    this.vocabulary.clear();
-    this.tallyMap.clear();
+  setStep(step) {
+    this.currentStep = parseInt(step);
+    this.modelCompiledOnDisk = false;
+    this.modelLoadedInRAM = false;
+    this.compiledModelArtifact = null;
+    this.activeRamLookup = {};
 
-    TRAINING_DATA.forEach(sample => {
-      const words = tokenize(sample.text);
-      words.forEach(word => {
-        this.vocabulary.add(word);
-        if (!this.tallyMap.has(word)) {
-          this.tallyMap.set(word, { posCount: 0, negCount: 0 });
+    const dataset = CRAWL_DATASETS[`step${this.currentStep}`];
+    this.activeTestSentence = dataset.tests[0].text;
+    this.activeTestId = dataset.tests[0].id;
+  }
+
+  // Action 1: Train Model (reads raw data on disk, tokenizes, counts tallies)
+  trainModel() {
+    const dataset = CRAWL_DATASETS[`step${this.currentStep}`];
+    if (dataset.diskFiles.length === 0) return null;
+
+    const artifact = {};
+    dataset.diskFiles.forEach(sample => {
+      const tokens = tokenize(sample.text);
+      tokens.forEach(tok => {
+        if (!artifact[tok]) {
+          artifact[tok] = { pos: 0, neg: 0 };
         }
-        const record = this.tallyMap.get(word);
-        if (sample.label === 1) {
-          record.posCount++;
-        } else {
-          record.negCount++;
-        }
+        if (sample.label === "positive") artifact[tok].pos += 1;
+        if (sample.label === "negative") artifact[tok].neg += 1;
       });
     });
+
+    this.compiledModelArtifact = artifact;
+    this.modelCompiledOnDisk = true;
+    return artifact;
   }
 
-  resetWeights() {
-    this.weights.clear();
-    this.vocabulary.forEach(w => {
-      this.weights.set(w, 0.0);
-    });
-    this.bias = 0.0;
-    this.epochsTrained = 0;
-    this.currentEpoch = 0;
-    this.currentSampleIndex = 0;
-    this.isTrainingRunning = false;
-    this.lossHistory = [0.5]; // initial coin toss error
+  // Action 2: Load Model into RAM (simple I/O transfer into active memory)
+  loadModelToRAM() {
+    if (!this.compiledModelArtifact) return false;
+    // Deep copy into RAM lookup table
+    this.activeRamLookup = JSON.parse(JSON.stringify(this.compiledModelArtifact));
+    this.modelLoadedInRAM = true;
+    return true;
   }
 
-  isTrained() {
-    return this.epochsTrained > 0;
-  }
-
-  // --- Inference Engine ---
-  // Stage 1: Tally ratio / score
-  predictStage1(sentence) {
+  // Inference Execution: evaluates sentence against activeRamLookup
+  evaluateInference(sentence) {
     const tokens = tokenize(sentence);
     let totalPos = 0;
     let totalNeg = 0;
     const tokenDetails = [];
 
     tokens.forEach(tok => {
-      const record = this.tallyMap.get(tok) || { posCount: 0, negCount: 0 };
-      totalPos += record.posCount;
-      totalNeg += record.negCount;
-      tokenDetails.push({
-        word: tok,
-        pos: record.posCount,
-        neg: record.negCount,
-        inVocab: this.tallyMap.has(tok)
-      });
+      const match = this.activeRamLookup[tok];
+      if (match) {
+        totalPos += match.pos;
+        totalNeg += match.neg;
+        tokenDetails.push({
+          token: tok,
+          pos: match.pos,
+          neg: match.neg,
+          inRAM: true
+        });
+      } else {
+        tokenDetails.push({
+          token: tok,
+          pos: 0,
+          neg: 0,
+          inRAM: false
+        });
+      }
     });
 
-    const sum = totalPos + totalNeg;
-    let probability = 0.5;
-    if (sum > 0) {
-      probability = totalPos / sum;
+    const totalClues = totalPos + totalNeg;
+    let probability = 0.5; // strictly 50% if 0 clues
+    if (totalClues > 0) {
+      probability = totalPos / totalClues;
     }
 
     return {
+      sentence,
       tokens,
       tokenDetails,
       totalPos,
       totalNeg,
+      totalClues,
       probability
-    };
-  }
-
-  // Stage 2 & 3: Logistic Regression (z = b + sum(w_i), P = sigmoid(z))
-  predictStage2(sentence) {
-    const tokens = tokenize(sentence);
-    // Unique tokens present in sentence
-    const uniqueTokens = Array.from(new Set(tokens));
-    let z = this.bias;
-    const tokenDetails = [];
-
-    uniqueTokens.forEach(tok => {
-      const weight = this.weights.has(tok) ? this.weights.get(tok) : 0.0;
-      z += weight;
-      tokenDetails.push({
-        word: tok,
-        weight: weight,
-        inVocab: this.weights.has(tok)
-      });
-    });
-
-    const probability = sigmoid(z);
-    return {
-      tokens: uniqueTokens,
-      tokenDetails,
-      bias: this.bias,
-      z,
-      probability
-    };
-  }
-
-  // Single step training on current sample
-  stepTrainingSample() {
-    if (this.currentSampleIndex >= TRAINING_DATA.length) {
-      this.currentSampleIndex = 0;
-      this.currentEpoch++;
-    }
-
-    const sample = TRAINING_DATA[this.currentSampleIndex];
-    const words = tokenize(sample.text);
-    const uniqueWords = Array.from(new Set(words));
-
-    // 1. Predict
-    let z = this.bias;
-    uniqueWords.forEach(w => {
-      z += (this.weights.get(w) || 0.0);
-    });
-    const prob = sigmoid(z);
-
-    // 2. Error
-    const error = sample.label - prob;
-
-    // 3. Update weights & bias: delta = alpha * error
-    const delta = this.learningRate * error;
-    this.bias += delta * 0.5; // slow bias update
-
-    const updatedWords = [];
-    uniqueWords.forEach(w => {
-      const oldW = this.weights.get(w) || 0.0;
-      const newW = oldW + delta;
-      this.weights.set(w, newW);
-      updatedWords.push({
-        word: w,
-        oldWeight: oldW,
-        newWeight: newW,
-        delta: delta
-      });
-    });
-
-    this.currentSampleIndex++;
-    if (this.currentSampleIndex >= TRAINING_DATA.length) {
-      this.epochsTrained = Math.max(this.epochsTrained, this.currentEpoch + 1);
-    }
-
-    return {
-      sample,
-      prob,
-      error,
-      delta,
-      updatedWords,
-      currentEpoch: this.currentEpoch,
-      currentSampleIndex: this.currentSampleIndex
     };
   }
 }
 
-// Instantiate state
-const labState = new LearningLabState();
+// Global Lab Instance
+const crawlLab = new CrawlHardwareLab();
 
-// ==========================================
-// UI Elements
-// ==========================================
-const UI = {
-  // Navigation
-  stageButtons: document.querySelectorAll('.stage-btn'),
-  bannerBadge: document.getElementById('banner-badge'),
-  bannerTitle: document.getElementById('banner-title'),
-  bannerDesc: document.getElementById('banner-desc'),
+// =======================================================================
+// UI Bindings & DOM References
+// =======================================================================
+const DOM = {
+  // Top Module Tabs
+  moduleButtons: document.querySelectorAll('.stage-btn'),
+  moduleContainers: {
+    crawl: document.getElementById('module-crawl-container'),
+    walk: document.getElementById('module-walk-container'),
+    jog: document.getElementById('module-jog-container'),
+    run: document.getElementById('module-run-container')
+  },
 
-  // Brain Views
-  brainView1: document.getElementById('brain-view-stage-1'),
-  brainView2: document.getElementById('brain-view-stage-2'),
-  brainView3: document.getElementById('brain-view-stage-3'),
-  
-  // Stage 1 Table
-  tallyTableBody: document.getElementById('tally-table-body'),
+  // Crawl Step Sub-navigation
+  crawlStepButtons: document.querySelectorAll('.crawl-step-btn'),
+  crawlBannerBadge: document.getElementById('crawl-banner-badge'),
+  crawlBannerTitle: document.getElementById('crawl-banner-title'),
+  crawlBannerDesc: document.getElementById('crawl-banner-desc'),
 
-  // Stage 2 Table & Stats
-  weightsTableBody: document.getElementById('weights-table-body'),
-  statBias: document.getElementById('stat-bias'),
-  statModelStatus: document.getElementById('stat-model-status'),
-  statEpochs: document.getElementById('stat-epochs'),
-  weightFilter: document.getElementById('weight-filter'),
-  sortDescBtn: document.getElementById('sort-weight-desc'),
-  sortAscBtn: document.getElementById('sort-weight-asc'),
-  sortAlphaBtn: document.getElementById('sort-weight-alpha'),
+  // Hardware Left Panel
+  ramStatusPill: document.getElementById('ram-status-pill'),
+  diskStatusBadge: document.getElementById('disk-status-badge'),
+  diskDescText: document.getElementById('disk-desc-text'),
+  diskSamplesList: document.getElementById('disk-samples-list'),
+  btnTrainDisk: document.getElementById('btn-train-disk'),
+  btnLoadRAM: document.getElementById('btn-load-ram'),
+  trainStepIndicator: document.getElementById('train-step-indicator'),
+  ramCountBadge: document.getElementById('ram-count-badge'),
+  ramTableBody: document.getElementById('ram-table-body'),
 
-  // Stage 3 Neuron SVG
-  neuronSvg: document.getElementById('neuron-svg'),
-  neuronCaption: document.getElementById('neuron-caption'),
-
-  // Playground Inference
-  testInput: document.getElementById('test-input'),
-  btnRunInference: document.getElementById('btn-run-inference'),
-  presetButtons: document.querySelectorAll('.btn-preset'),
-  resultPercentLabel: document.getElementById('result-percent-label'),
-  gaugeMarker: document.getElementById('gauge-marker'),
-  predictionVerdict: document.getElementById('prediction-verdict'),
-  mathBreakdown: document.getElementById('math-breakdown'),
-
-  // Training Section
-  trainingStatusPill: document.getElementById('training-status-pill'),
-  metaWeightsState: document.getElementById('meta-weights-state'),
-  btnOpenTraining: document.getElementById('btn-open-training'),
-  btnResetWeights: document.getElementById('btn-reset-weights'),
-
-  // Modal
-  dialog: document.getElementById('training-dialog'),
-  btnCloseModal: document.getElementById('btn-close-modal'),
-  modalEpochCount: document.getElementById('modal-epoch-count'),
-  modalSampleCount: document.getElementById('modal-sample-count'),
-  modalErrorVal: document.getElementById('modal-error-val'),
-  modalLoopStatus: document.getElementById('modal-loop-status'),
-  sampleTargetBadge: document.getElementById('sample-target-badge'),
-  sampleText: document.getElementById('sample-text'),
-  calcStepPred: document.getElementById('calc-step-pred'),
-  calcStepError: document.getElementById('calc-step-error'),
-  calcStepDelta: document.getElementById('calc-step-delta'),
-  adjustedWordsList: document.getElementById('adjusted-words-list'),
-  lossCanvas: document.getElementById('loss-canvas'),
-  trainingSpeed: document.getElementById('training-speed'),
-  speedLabel: document.getElementById('speed-label'),
-  btnModalStep: document.getElementById('btn-modal-step'),
-  btnModalRun: document.getElementById('btn-modal-run'),
-  btnModalReset: document.getElementById('btn-modal-reset')
+  // Inference Right Panel
+  crawlTestCards: document.getElementById('crawl-test-cards'),
+  crawlVerdictTag: document.getElementById('crawl-verdict-tag'),
+  crawlTokenDisplay: document.getElementById('crawl-token-display'),
+  crawlScoreLabel: document.getElementById('crawl-score-label'),
+  crawlGaugeMarker: document.getElementById('crawl-gauge-marker'),
+  crawlMathTrace: document.getElementById('crawl-math-trace')
 };
 
-// ==========================================
-// Banner & Stage View Switcher
-// ==========================================
-const STAGE_CONFIG = {
+// =======================================================================
+// Step Metadata & Explanations
+// =======================================================================
+const STEP_META = {
   1: {
-    badge: "Stage 1: Crawl",
-    title: "Counting Observations: Why Data Matters",
-    desc: "Words are tallied into Positive vs. Negative buckets. Inference checks if a test sentence contains more positive tally marks or negative tally marks."
+    badge: "View 1: The Blank Slate",
+    title: "Empty RAM: Baseline Guessing",
+    desc: "Computers do not inherently 'know English' or human emotions. Without a compiled model loaded in RAM, the processor has zero reference clues and must resort to an uncalibrated 50/50 coin toss."
   },
   2: {
-    badge: "Stage 2: Walk",
-    title: "Dials & The Training Loop: Logistic Regression (SGD)",
-    desc: "Every word has a numeric dial ('weight'). Untrained, every dial is 0.0 (50% coin toss). As we train over mistakes, words like 'great' spin positive and 'terrible' spin negative."
+    badge: "View 2: The 2-Sample Model",
+    title: "Train ➔ Load ➔ Generalization & Blind Spots",
+    desc: "Training compiles raw text into an artifact; loading puts it into RAM. The model generalizes cleanly on shared words ('great', 'slow'), but is totally blind to unobserved words."
   },
   3: {
-    badge: "Stage 3: Jog",
-    title: "The Single-Neuron Perceptron: Neural Network Foundation",
-    desc: "Demystifying AI jargon: An artificial neuron is identical to Stage 2. Inputs multiply by dial weights, aggregate at a summation nucleus, and activate into a prediction."
+    badge: "View 3: Scaling the Data",
+    title: "Scaling Data ➔ Token Coverage & Loanword Reality",
+    desc: "Training on 10 samples expands RAM vocabulary (~40 tokens) to eliminate blind spots. Notice how loanwords ('excelente', 'magnifique') are stored as plain string tokens."
   }
 };
 
-function switchStage(stageNum) {
-  labState.currentStage = parseInt(stageNum);
+// =======================================================================
+// UI Rendering Functions
+// =======================================================================
 
-  // Update tabs
-  UI.stageButtons.forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.stage) === labState.currentStage);
+function renderCrawlView() {
+  const step = crawlLab.currentStep;
+  const meta = STEP_META[step];
+  const dataset = CRAWL_DATASETS[`step${step}`];
+
+  // Update step buttons active state
+  DOM.crawlStepButtons.forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.step) === step);
   });
 
-  // Update banner
-  const config = STAGE_CONFIG[labState.currentStage];
-  UI.bannerBadge.textContent = config.badge;
-  UI.bannerTitle.textContent = config.title;
-  UI.bannerDesc.textContent = config.desc;
+  // Update banners
+  DOM.crawlBannerBadge.textContent = meta.badge;
+  DOM.crawlBannerTitle.textContent = meta.title;
+  DOM.crawlBannerDesc.textContent = meta.desc;
 
-  // Toggle Brain views
-  UI.brainView1.classList.toggle('active', labState.currentStage === 1);
-  UI.brainView2.classList.toggle('active', labState.currentStage === 2);
-  UI.brainView3.classList.toggle('active', labState.currentStage === 3);
-
-  // Refresh current inference & brain representation
-  renderBrainView();
-  runInference();
-}
-
-// ==========================================
-// Brain Panel Rendering
-// ==========================================
-let currentWeightSort = "desc"; // "desc", "asc", "alpha"
-
-function renderStage1TallyTable(highlightTokens = []) {
-  const sortedWords = Array.from(labState.vocabulary).sort();
-  const highlightSet = new Set(highlightTokens.map(w => w.toLowerCase()));
-
-  UI.tallyTableBody.innerHTML = sortedWords.map(word => {
-    const data = labState.tallyMap.get(word);
-    const isHit = highlightSet.has(word);
-    let tendencyTag = `<span class="weight-tag neutral">Neutral (0/0)</span>`;
-    if (data.posCount > data.negCount) {
-      tendencyTag = `<span class="weight-tag pos">+${data.posCount - data.negCount} Pos</span>`;
-    } else if (data.negCount > data.posCount) {
-      tendencyTag = `<span class="weight-tag neg">-${data.negCount - data.posCount} Neg</span>`;
-    }
-
-    return `
-      <tr class="${isHit ? 'highlight-hit' : ''}">
-        <td><strong>${word}</strong></td>
-        <td class="num-col" style="color: var(--pos-color); font-weight: 600;">${data.posCount}</td>
-        <td class="num-col" style="color: var(--neg-color); font-weight: 600;">${data.negCount}</td>
-        <td>${tendencyTag}</td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderStage2WeightsTable(highlightTokens = [], flashWords = new Map()) {
-  UI.statBias.textContent = (labState.bias >= 0 ? "+" : "") + labState.bias.toFixed(3);
-  UI.statEpochs.textContent = labState.epochsTrained;
-  
-  const isTrained = labState.isTrained();
-  UI.statModelStatus.textContent = isTrained ? "Trained" : "Untrained (All 0.0)";
-  UI.statModelStatus.className = `status-badge ${isTrained ? 'trained' : ''}`;
-  UI.metaWeightsState.textContent = isTrained ? `Trained (${labState.epochsTrained} epochs)` : "All 0.0 (Untrained)";
-  UI.trainingStatusPill.textContent = isTrained ? "Trained Model Active" : "Ready to Train";
-
-  const filterText = UI.weightFilter.value.trim().toLowerCase();
-  const highlightSet = new Set(highlightTokens.map(w => w.toLowerCase()));
-
-  let wordList = Array.from(labState.vocabulary).map(word => {
-    return {
-      word,
-      weight: labState.weights.get(word) || 0.0
-    };
-  });
-
-  if (filterText) {
-    wordList = wordList.filter(item => item.word.includes(filterText));
-  }
-
-  // Sorting
-  if (currentWeightSort === "desc") {
-    wordList.sort((a, b) => b.weight - a.weight);
-  } else if (currentWeightSort === "asc") {
-    wordList.sort((a, b) => a.weight - b.weight);
+  // --- Render Disk Storage Section ---
+  if (step === 1) {
+    DOM.diskStatusBadge.textContent = "0 raw files";
+    DOM.diskStatusBadge.classList.remove('active');
+    DOM.diskDescText.textContent = "No training data on disk yet. The computer has no source material to learn from.";
+    DOM.diskSamplesList.innerHTML = `<div style="color: var(--text-dim); font-size: 0.8rem; text-align: center; padding: 1rem;">(Disk storage contains 0 training datasets)</div>`;
+    DOM.btnTrainDisk.disabled = true;
+    DOM.btnLoadRAM.disabled = true;
+    DOM.trainStepIndicator.textContent = "";
   } else {
-    wordList.sort((a, b) => a.word.localeCompare(b.word));
+    DOM.diskStatusBadge.textContent = `${dataset.diskFiles.length} raw samples on disk`;
+    DOM.diskStatusBadge.classList.add('active');
+    DOM.diskDescText.textContent = `Raw unparsed sentences stored on disk. Click 'Train' to compile them into a dictionary artifact.`;
+    DOM.diskSamplesList.innerHTML = dataset.diskFiles.map(s => `
+      <div class="disk-sample-item">
+        <span class="disk-sample-tag ${s.label === 'positive' ? 'pos' : 'neg'}">${s.label === 'positive' ? '+ POS' : '- NEG'}</span>
+        <span style="color: var(--text-main); font-style: italic;">"${s.text}"</span>
+      </div>
+    `).join('');
+
+    DOM.btnTrainDisk.disabled = false;
+    DOM.btnLoadRAM.disabled = !crawlLab.modelCompiledOnDisk;
+
+    if (!crawlLab.modelCompiledOnDisk) {
+      DOM.trainStepIndicator.textContent = "Ready to train";
+    } else if (crawlLab.modelCompiledOnDisk && !crawlLab.modelLoadedInRAM) {
+      DOM.trainStepIndicator.textContent = "✓ Model compiled to disk! Now load to RAM.";
+    } else {
+      DOM.trainStepIndicator.textContent = "✓ Model active in RAM!";
+    }
   }
 
-  UI.weightsTableBody.innerHTML = wordList.map(item => {
-    const isHit = highlightSet.has(item.word);
-    const flashClass = flashWords.has(item.word) 
-      ? (flashWords.get(item.word) > 0 ? 'flash-pos' : 'flash-neg') 
-      : '';
-
-    let tag = `<span class="weight-tag neutral">Zero (0.00)</span>`;
-    if (item.weight > 0.001) {
-      tag = `<span class="weight-tag pos">Positive (+${item.weight.toFixed(2)})</span>`;
-    } else if (item.weight < -0.001) {
-      tag = `<span class="weight-tag neg">Negative (${item.weight.toFixed(2)})</span>`;
-    }
-
-    return `
-      <tr class="${isHit ? 'highlight-hit' : ''} ${flashClass}">
-        <td><strong>${item.word}</strong></td>
-        <td class="num-col font-mono" style="font-weight: 700; color: ${item.weight > 0 ? 'var(--pos-color)' : item.weight < 0 ? 'var(--neg-color)' : 'var(--text-muted)'}">
-          ${item.weight >= 0 ? '+' : ''}${item.weight.toFixed(3)}
+  // --- Render RAM Table Section ---
+  const activeTokens = Object.keys(crawlLab.activeRamLookup);
+  if (activeTokens.length === 0) {
+    DOM.ramStatusPill.textContent = "RAM: 0 Tokens (Empty)";
+    DOM.ramCountBadge.textContent = "0 Active Lookups";
+    DOM.ramTableBody.innerHTML = `
+      <tr class="empty-row">
+        <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 2rem;">
+          RAM is empty. Load a model to inspect active memory tokens.
         </td>
-        <td>${tag}</td>
       </tr>
     `;
-  }).join('');
-}
-
-// Stage 3: Render Interactive Single-Neuron SVG
-function renderStage3Neuron(predictionData) {
-  const tokens = predictionData ? predictionData.tokens : [];
-  const tokenDetails = predictionData ? predictionData.tokenDetails : [];
-  const bias = labState.bias;
-  const z = predictionData ? predictionData.z : bias;
-  const prob = predictionData ? predictionData.probability : sigmoid(bias);
-
-  // SVG dimensions: 760 x 480
-  const width = 760;
-  const height = 480;
-  const nucleusX = 390;
-  const nucleusY = 240;
-  const outputX = 670;
-  const outputY = 240;
-
-  // Render input slots (up to 6 inputs visually)
-  const displayTokens = tokenDetails.slice(0, 6);
-  const inputCount = Math.max(displayTokens.length, 1);
-  const inputSpacing = Math.min(65, (height - 100) / inputCount);
-  const startY = nucleusY - ((inputCount - 1) * inputSpacing) / 2;
-
-  let inputsSvg = "";
-  let synapLinesSvg = "";
-
-  displayTokens.forEach((tok, idx) => {
-    const inX = 90;
-    const inY = startY + (idx * inputSpacing);
-    const weightVal = tok.weight;
-    const weightColor = weightVal > 0.05 ? "var(--pos-color)" : weightVal < -0.05 ? "var(--neg-color)" : "#94a3b8";
-    const lineColor = weightVal > 0.05 ? "rgba(16, 185, 129, 0.7)" : weightVal < -0.05 ? "rgba(239, 68, 68, 0.7)" : "rgba(148, 163, 184, 0.3)";
-    const strokeWidth = Math.max(1.5, Math.min(5, 1.5 + Math.abs(weightVal) * 1.5));
-
-    // Connection path to nucleus
-    synapLinesSvg += `
-      <path d="M ${inX + 50} ${inY} C ${inX + 160} ${inY}, ${nucleusX - 90} ${nucleusY}, ${nucleusX - 60} ${nucleusY}" 
-            fill="none" stroke="${lineColor}" stroke-width="${strokeWidth}" />
-      <text x="${inX + 130}" y="${(inY + nucleusY) / 2 - 6}" fill="${weightColor}" font-size="11" font-family="monospace" font-weight="bold">
-        w=${weightVal >= 0 ? '+' : ''}${weightVal.toFixed(2)}
-      </text>
-    `;
-
-    // Input node pill
-    inputsSvg += `
-      <g transform="translate(${inX}, ${inY})">
-        <rect x="-45" y="-16" width="95" height="32" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5" />
-        <text x="2" y="4" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="600">
-          "${tok.word}"
-        </text>
-      </g>
-    `;
-  });
-
-  if (displayTokens.length === 0) {
-    // Idle placeholder
-    inputsSvg += `
-      <g transform="translate(90, ${nucleusY})">
-        <rect x="-60" y="-18" width="120" height="36" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
-        <text x="0" y="5" text-anchor="middle" fill="#94a3b8" font-size="12">(Type sentence)</text>
-      </g>
-    `;
-    synapLinesSvg += `
-      <line x1="150" y1="${nucleusY}" x2="${nucleusX - 60}" y2="${nucleusY}" stroke="#475569" stroke-width="2" stroke-dasharray="4" />
-    `;
-  }
-
-  // Nucleus: Summation + Sigmoid Gate
-  const nucleusSvg = `
-    <!-- Nucleus Circle -->
-    <g transform="translate(${nucleusX}, ${nucleusY})">
-      <circle r="65" fill="#1e293b" stroke="#38bdf8" stroke-width="3" filter="drop-shadow(0px 0px 8px rgba(56, 189, 248, 0.4))" />
-      
-      <!-- Divider line in cell -->
-      <line x1="0" y1="-65" x2="0" y2="65" stroke="#334155" stroke-width="2" />
-      
-      <!-- Left side: Summation sigma -->
-      <text x="-32" y="-12" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="bold">Σ w·x + b</text>
-      <text x="-32" y="14" text-anchor="middle" fill="#38bdf8" font-size="15" font-family="monospace" font-weight="bold">
-        z=${z >= 0 ? '+' : ''}${z.toFixed(2)}
-      </text>
-      <text x="-32" y="34" text-anchor="middle" fill="#64748b" font-size="10">
-        b=${bias >= 0 ? '+' : ''}${bias.toFixed(2)}
-      </text>
-
-      <!-- Right side: Sigmoid Activation -->
-      <path d="M 12 18 Q 28 18 32 0 T 52 -18" fill="none" stroke="#60a5fa" stroke-width="2.5" />
-      <text x="32" y="-28" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="bold">Sigmoid σ</text>
-      <text x="32" y="34" text-anchor="middle" fill="#e2e8f0" font-size="12" font-family="monospace">
-        ${(prob * 100).toFixed(0)}%
-      </text>
-    </g>
-  `;
-
-  // Output Synapse to Meter
-  const probColor = prob >= 0.55 ? "var(--pos-color)" : prob <= 0.45 ? "var(--neg-color)" : "var(--neutral-color)";
-  const outLineColor = prob >= 0.55 ? "rgba(16, 185, 129, 0.8)" : prob <= 0.45 ? "rgba(239, 68, 68, 0.8)" : "rgba(245, 158, 11, 0.8)";
-  
-  const outputSvg = `
-    <!-- Connection from Nucleus to Output -->
-    <path d="M ${nucleusX + 65} ${nucleusY} L ${outputX - 45} ${outputY}" 
-          fill="none" stroke="${outLineColor}" stroke-width="4" />
-    <polygon points="${outputX - 45},${outputY - 5} ${outputX - 35},${outputY} ${outputX - 45},${outputY + 5}" fill="${outLineColor}" />
-
-    <!-- Output Probability Display -->
-    <g transform="translate(${outputX}, ${outputY})">
-      <rect x="-40" y="-36" width="85" height="72" rx="10" fill="#0f172a" stroke="${probColor}" stroke-width="2.5" />
-      <text x="2" y="-12" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="bold">OUTPUT</text>
-      <text x="2" y="14" text-anchor="middle" fill="${probColor}" font-size="18" font-family="monospace" font-weight="800">
-        ${(prob * 100).toFixed(1)}%
-      </text>
-      <text x="2" y="28" text-anchor="middle" fill="#cbd5e1" font-size="9" font-weight="600">
-        ${prob >= 0.55 ? 'Positive' : prob <= 0.45 ? 'Negative' : 'Neutral'}
-      </text>
-    </g>
-  `;
-
-  UI.neuronSvg.innerHTML = `
-    ${synapLinesSvg}
-    ${inputsSvg}
-    ${nucleusSvg}
-    ${outputSvg}
-  `;
-}
-
-function renderBrainView(highlightTokens = [], flashWords = new Map(), predictionData = null) {
-  if (labState.currentStage === 1) {
-    renderStage1TallyTable(highlightTokens);
-  } else if (labState.currentStage === 2) {
-    renderStage2WeightsTable(highlightTokens, flashWords);
-  } else if (labState.currentStage === 3) {
-    renderStage3Neuron(predictionData);
-  }
-}
-
-// ==========================================
-// Inference Engine Execution & UI Updates
-// ==========================================
-function runInference() {
-  const sentence = UI.testInput.value.trim();
-  if (!sentence) return;
-
-  if (labState.currentStage === 1) {
-    // Stage 1: Tally ratio
-    const result = labState.predictStage1(sentence);
-    const pct = (result.probability * 100).toFixed(1);
-    UI.resultPercentLabel.textContent = `${pct}%`;
-    UI.gaugeMarker.style.left = `${pct}%`;
-
-    // Verdict tag
-    if (result.probability > 0.55) {
-      UI.predictionVerdict.innerHTML = `<span class="verdict-tag positive">Predicted: Positive (${pct}%)</span>`;
-    } else if (result.probability < 0.45) {
-      UI.predictionVerdict.innerHTML = `<span class="verdict-tag negative">Predicted: Negative (${pct}%)</span>`;
-    } else {
-      UI.predictionVerdict.innerHTML = `<span class="verdict-tag neutral">Neutral Coin Toss (50.0%)</span>`;
-    }
-
-    // Step-by-step arithmetic breakdown
-    const breakdownLines = [];
-    breakdownLines.push(`Tokens Found: [ ${result.tokens.map(t => `"${t}"`).join(', ')} ]`);
-    breakdownLines.push(`Positive Word Hits: ${result.totalPos}`);
-    breakdownLines.push(`Negative Word Hits: ${result.totalNeg}`);
-    if (result.totalPos + result.totalNeg === 0) {
-      breakdownLines.push(`Calculation: 0 observations found in training vocabulary -> Default neutral = 50.0%`);
-    } else {
-      breakdownLines.push(`Calculation: Positive Ratio = ${result.totalPos} / (${result.totalPos} + ${result.totalNeg}) = ${result.probability.toFixed(3)} (${pct}%)`);
-    }
-    UI.mathBreakdown.innerHTML = breakdownLines.join('<br>');
-
-    renderStage1TallyTable(result.tokens);
-
   } else {
-    // Stage 2 & Stage 3: Logistic Regression / Single Neuron
-    const result = labState.predictStage2(sentence);
-    const pct = (result.probability * 100).toFixed(1);
-    UI.resultPercentLabel.textContent = `${pct}%`;
-    UI.gaugeMarker.style.left = `${pct}%`;
-
-    // Verdict tag
-    if (result.probability > 0.55) {
-      UI.predictionVerdict.innerHTML = `<span class="verdict-tag positive">Predicted: Positive (${pct}%)</span>`;
-    } else if (result.probability < 0.45) {
-      UI.predictionVerdict.innerHTML = `<span class="verdict-tag negative">Predicted: Negative (${pct}%)</span>`;
-    } else {
-      UI.predictionVerdict.innerHTML = `<span class="verdict-tag neutral">Neutral Coin Toss (50.0%)</span>`;
-    }
-
-    // Step-by-step arithmetic breakdown
-    const breakdownLines = [];
-    const sumTerms = result.tokenDetails.map(t => {
-      const sign = t.weight >= 0 ? "+" : "";
-      return `${sign}${t.weight.toFixed(3)} ("${t.word}")`;
-    });
-
-    const biasStr = (result.bias >= 0 ? "+" : "") + result.bias.toFixed(3);
-    const formulaStr = sumTerms.length > 0 
-      ? `z = bias (${biasStr}) + ${sumTerms.join(" + ")} = <span class="math-highlight">${result.z.toFixed(3)}</span>`
-      : `z = bias (${biasStr}) + 0.000 = <span class="math-highlight">${result.z.toFixed(3)}</span>`;
-
-    breakdownLines.push(formulaStr);
-    breakdownLines.push(`P = Sigmoid(z) = 1 / (1 + e^(${-result.z.toFixed(3)})) = <span class="math-highlight">${result.probability.toFixed(4)} (${pct}%)</span>`);
+    DOM.ramStatusPill.textContent = `RAM: ${activeTokens.length} Tokens Loaded`;
+    DOM.ramCountBadge.textContent = `${activeTokens.length} Active Lookups`;
     
-    if (!labState.isTrained()) {
-      breakdownLines.push(`<span style="color: var(--neutral-color)">Note: All weights are currently 0.0 (Untrained state). Prediction is guaranteed 50.0%.</span>`);
-    }
+    DOM.ramTableBody.innerHTML = activeTokens.sort().map(tok => {
+      const data = crawlLab.activeRamLookup[tok];
+      let leanTag = `<span class="weight-tag neutral">Tied (1/1)</span>`;
+      if (data.pos > data.neg) {
+        leanTag = `<span class="weight-tag pos">+${data.pos - data.neg} Pos</span>`;
+      } else if (data.neg > data.pos) {
+        leanTag = `<span class="weight-tag neg">-${data.neg - data.pos} Neg</span>`;
+      }
 
-    UI.mathBreakdown.innerHTML = breakdownLines.join('<br>');
-
-    if (labState.currentStage === 2) {
-      renderStage2WeightsTable(result.tokens);
-    } else {
-      renderStage3Neuron(result);
-    }
+      return `
+        <tr>
+          <td><strong>${tok}</strong></td>
+          <td class="num-col" style="color: var(--pos-color); font-weight: 600;">${data.pos}</td>
+          <td class="num-col" style="color: var(--neg-color); font-weight: 600;">${data.neg}</td>
+          <td>${leanTag}</td>
+        </tr>
+      `;
+    }).join('');
   }
+
+  // --- Render Test Preset Cards ---
+  DOM.crawlTestCards.innerHTML = dataset.tests.map(t => {
+    const isSelected = t.id === crawlLab.activeTestId;
+    return `
+      <div class="test-card-btn ${isSelected ? 'active' : ''}" data-testid="${t.id}" data-text="${t.text}">
+        <span class="test-card-text">"${t.text}"</span>
+        <span class="test-card-badge ${isSelected ? 'pos' : 'neutral'}">
+          ${isSelected ? 'Evaluating ▶' : 'Test'}
+        </span>
+      </div>
+    `;
+  }).join('');
+
+  // Re-attach test button listeners
+  document.querySelectorAll('.test-card-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      crawlLab.activeTestId = btn.dataset.testid;
+      crawlLab.activeTestSentence = btn.dataset.text;
+      renderCrawlView();
+    });
+  });
+
+  // Execute and render active test inference
+  renderInferenceResult();
 }
 
-// ==========================================
-// Loss Chart (Canvas)
-// ==========================================
-function renderLossChart() {
-  const canvas = UI.lossCanvas;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
+function renderInferenceResult() {
+  const result = crawlLab.evaluateInference(crawlLab.activeTestSentence);
+  const pct = (result.probability * 100).toFixed(1);
 
-  ctx.clearRect(0, 0, w, h);
+  // Update Score & Gauge
+  DOM.crawlScoreLabel.textContent = `${pct}%`;
+  DOM.crawlGaugeMarker.style.left = `${pct}%`;
 
-  // Background grid
-  ctx.strokeStyle = "rgba(51, 65, 85, 0.4)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let y = 20; y < h; y += 25) {
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
+  // Update Verdict Tag
+  if (result.totalClues === 0) {
+    DOM.crawlVerdictTag.className = "verdict-tag neutral";
+    DOM.crawlVerdictTag.textContent = "50.0% (Undecided / 0 Clues in RAM)";
+  } else if (result.probability > 0.55) {
+    DOM.crawlVerdictTag.className = "verdict-tag positive";
+    DOM.crawlVerdictTag.textContent = `Predicted Positive (${pct}%)`;
+  } else if (result.probability < 0.45) {
+    DOM.crawlVerdictTag.className = "verdict-tag negative";
+    DOM.crawlVerdictTag.textContent = `Predicted Negative (${pct}%)`;
+  } else {
+    DOM.crawlVerdictTag.className = "verdict-tag neutral";
+    DOM.crawlVerdictTag.textContent = `Tied Evidence (${pct}%)`;
   }
-  ctx.stroke();
 
-  const data = labState.lossHistory;
-  if (data.length === 0) return;
-
-  // Plot line
-  ctx.strokeStyle = "#38bdf8";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-
-  const stepX = (w - 40) / Math.max(data.length - 1, 1);
-  data.forEach((val, i) => {
-    const x = 20 + i * stepX;
-    // val ranges 0.0 to 0.5 (or higher)
-    const normalizedY = Math.max(0, Math.min(1, val / 0.6));
-    const y = h - 20 - (normalizedY * (h - 40));
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  // Highlight points
-  data.forEach((val, i) => {
-    const x = 20 + i * stepX;
-    const normalizedY = Math.max(0, Math.min(1, val / 0.6));
-    const y = h - 20 - (normalizedY * (h - 40));
-    ctx.fillStyle = i === data.length - 1 ? "#10b981" : "#38bdf8";
-    ctx.beginPath();
-    ctx.arc(x, y, i === data.length - 1 ? 4 : 2.5, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
-
-// Compute average loss over entire dataset
-function calculateDatasetMeanError() {
-  let totalAbsError = 0;
-  TRAINING_DATA.forEach(sample => {
-    const pred = labState.predictStage2(sample.text).probability;
-    totalAbsError += Math.abs(sample.label - pred);
-  });
-  return totalAbsError / TRAINING_DATA.length;
-}
-
-// ==========================================
-// Modal Training Loop Logic
-// ==========================================
-function updateModalInspectors(stepInfo) {
-  UI.modalEpochCount.textContent = `${stepInfo.currentEpoch + 1} / ${labState.targetEpochs}`;
-  UI.modalSampleCount.textContent = `${stepInfo.currentSampleIndex} / ${TRAINING_DATA.length}`;
-  
-  const meanErr = calculateDatasetMeanError();
-  UI.modalErrorVal.textContent = meanErr.toFixed(3);
-
-  const sample = stepInfo.sample;
-  UI.sampleText.textContent = `"${sample.text}"`;
-  UI.sampleTargetBadge.textContent = sample.label === 1 ? "Target: 1 (Positive)" : "Target: 0 (Negative)";
-  UI.sampleTargetBadge.className = `sample-target-badge ${sample.label === 1 ? '' : 'neg'}`;
-
-  UI.calcStepPred.textContent = `P = Sigmoid(z) = ${stepInfo.prob.toFixed(3)}`;
-  UI.calcStepError.textContent = `error = ${sample.label} - ${stepInfo.prob.toFixed(3)} = ${stepInfo.error >= 0 ? '+' : ''}${stepInfo.error.toFixed(3)}`;
-  UI.calcStepDelta.textContent = `Δw = 0.15 × (${stepInfo.error >= 0 ? '+' : ''}${stepInfo.error.toFixed(3)}) = ${stepInfo.delta >= 0 ? '+' : ''}${stepInfo.delta.toFixed(3)}`;
-
-  UI.adjustedWordsList.innerHTML = stepInfo.updatedWords.map(uw => {
-    const color = uw.delta > 0 ? 'var(--pos-color)' : 'var(--neg-color)';
-    return `<span class="adj-pill" style="color: ${color}">"${uw.word}": ${uw.newWeight.toFixed(2)}</span>`;
+  // Render Token Highlighting Pills (Green/Red for hits, Gray for OOV)
+  DOM.crawlTokenDisplay.innerHTML = result.tokenDetails.map(item => {
+    if (!item.inRAM) {
+      return `<span class="tok-pill oov" title="Out of Vocabulary: Not in RAM">"${item.token}" (0)</span>`;
+    }
+    if (item.pos > item.neg) {
+      return `<span class="tok-pill pos" title="Positive in RAM">"${item.token}" (+${item.pos})</span>`;
+    }
+    if (item.neg > item.pos) {
+      return `<span class="tok-pill neg" title="Negative in RAM">"${item.token}" (-${item.neg})</span>`;
+    }
+    return `<span class="tok-pill neutral" title="Tied evidence">"${item.token}" (=)</span>`;
   }).join(' ');
 
-  // Flash updated words in weights table
-  const flashMap = new Map();
-  stepInfo.updatedWords.forEach(uw => flashMap.set(uw.word, uw.delta));
-  renderStage2WeightsTable([], flashMap);
-}
+  // Mathematical Trace
+  const recognizedTokens = result.tokenDetails.filter(t => t.inRAM);
+  const traceLines = [];
 
-function executeSingleStep() {
-  const stepInfo = labState.stepTrainingSample();
-  updateModalInspectors(stepInfo);
-
-  // If completed an epoch, record loss history
-  if (stepInfo.currentSampleIndex === TRAINING_DATA.length) {
-    const meanErr = calculateDatasetMeanError();
-    labState.lossHistory.push(meanErr);
-    renderLossChart();
+  if (recognizedTokens.length === 0) {
+    traceLines.push(`Recognized Tokens in RAM: [ none ]`);
+    traceLines.push(`Positive Evidence (P): 0 | Negative Evidence (N): 0`);
+    traceLines.push(`Score Calculation: 0 clues found in active memory ➔ Default 50.0% (Coin Toss)`);
+  } else {
+    traceLines.push(`Recognized Tokens in RAM: [ ${recognizedTokens.map(t => `"${t.token}"`).join(', ')} ]`);
+    traceLines.push(`Positive Evidence (P): ${result.totalPos} | Negative Evidence (N): ${result.totalNeg}`);
+    traceLines.push(`Score Calculation: P / (P + N) = ${result.totalPos} / (${result.totalPos} + ${result.totalNeg}) = ${result.probability.toFixed(3)} ➔ ${pct}%`);
   }
 
-  runInference();
+  DOM.crawlMathTrace.innerHTML = traceLines.join('<br>');
 }
 
-async function runAllTrainingEpochs() {
-  if (labState.isTrainingRunning) return;
-  labState.isTrainingRunning = true;
-  UI.btnModalRun.disabled = true;
-  UI.btnModalStep.disabled = true;
-  UI.modalLoopStatus.textContent = "Training...";
-  UI.modalLoopStatus.className = "mstat-value status-badge";
-
-  const totalSteps = labState.targetEpochs * TRAINING_DATA.length;
-  let executedSteps = labState.currentEpoch * TRAINING_DATA.length + labState.currentSampleIndex;
-
-  while (executedSteps < totalSteps && labState.isTrainingRunning) {
-    const stepInfo = labState.stepTrainingSample();
-    executedSteps++;
-
-    // Periodic UI update according to slider
-    const delay = parseInt(UI.trainingSpeed.value);
-    
-    // Only update inspectors every step if delay > 50ms, else batch UI
-    if (delay > 50 || executedSteps % 5 === 0 || executedSteps === totalSteps) {
-      updateModalInspectors(stepInfo);
-      if (stepInfo.currentSampleIndex === TRAINING_DATA.length) {
-        const meanErr = calculateDatasetMeanError();
-        labState.lossHistory.push(meanErr);
-        renderLossChart();
-      }
-      runInference();
-      await new Promise(r => setTimeout(r, delay));
-    }
-  }
-
-  labState.isTrainingRunning = false;
-  UI.btnModalRun.disabled = false;
-  UI.btnModalStep.disabled = false;
-  UI.modalLoopStatus.textContent = "Finished!";
-  UI.modalLoopStatus.className = "mstat-value status-badge trained";
-
-  const finalMeanErr = calculateDatasetMeanError();
-  labState.lossHistory.push(finalMeanErr);
-  renderLossChart();
-  runInference();
-}
-
-// Reset weights and UI
-function resetWeightsAndLab() {
-  labState.resetWeights();
-  UI.modalLoopStatus.textContent = "Idle (Untrained)";
-  UI.modalLoopStatus.className = "mstat-value status-badge";
-  UI.modalEpochCount.textContent = "0 / 20";
-  UI.modalSampleCount.textContent = "0 / 20";
-  UI.modalErrorVal.textContent = "0.500";
-  UI.adjustedWordsList.innerHTML = "";
-  renderLossChart();
-  renderBrainView();
-  runInference();
-}
-
-// ==========================================
-// Event Listeners & Initialization
-// ==========================================
-function setupEventListeners() {
-  // Stage Selector Tabs
-  UI.stageButtons.forEach(btn => {
-    btn.addEventListener('click', () => switchStage(btn.dataset.stage));
-  });
-
-  // Inference Input & Evaluation
-  UI.btnRunInference.addEventListener('click', runInference);
-  UI.testInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') runInference();
-  });
-  UI.testInput.addEventListener('input', () => {
-    if (labState.currentStage === 3) {
-      // Dynamic response in neuron diagram as user types
-      runInference();
-    }
-  });
-
-  // Presets
-  UI.presetButtons.forEach(btn => {
+// =======================================================================
+// Event Listeners & Bootstrapping
+// =======================================================================
+function setupCrawlEventListeners() {
+  // Module Switching
+  DOM.moduleButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      UI.testInput.value = btn.dataset.text;
-      runInference();
+      const targetModule = btn.dataset.module;
+      DOM.moduleButtons.forEach(b => b.classList.toggle('active', b === btn));
+      Object.keys(DOM.moduleContainers).forEach(m => {
+        DOM.moduleContainers[m].classList.toggle('active', m === targetModule);
+      });
     });
   });
 
-  // Sorting and Filtering Weights Table
-  UI.weightFilter.addEventListener('input', () => renderStage2WeightsTable());
-  UI.sortDescBtn.addEventListener('click', () => {
-    currentWeightSort = "desc";
-    renderStage2WeightsTable();
-  });
-  UI.sortAscBtn.addEventListener('click', () => {
-    currentWeightSort = "asc";
-    renderStage2WeightsTable();
-  });
-  UI.sortAlphaBtn.addEventListener('click', () => {
-    currentWeightSort = "alpha";
-    renderStage2WeightsTable();
+  // Step Sub-navigation
+  DOM.crawlStepButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      crawlLab.setStep(btn.dataset.step);
+      renderCrawlView();
+    });
   });
 
-  // Modal Dialog controls
-  UI.btnOpenTraining.addEventListener('click', () => {
-    UI.dialog.showModal();
-    renderLossChart();
-  });
-  UI.btnCloseModal.addEventListener('click', () => {
-    labState.isTrainingRunning = false;
-    UI.dialog.close();
-  });
-  UI.dialog.addEventListener('cancel', () => {
-    labState.isTrainingRunning = false;
+  // Train Button
+  DOM.btnTrainDisk.addEventListener('click', () => {
+    crawlLab.trainModel();
+    renderCrawlView();
   });
 
-  // Modal Action Buttons
-  UI.btnModalStep.addEventListener('click', executeSingleStep);
-  UI.btnModalRun.addEventListener('click', runAllTrainingEpochs);
-  UI.btnModalReset.addEventListener('click', resetWeightsAndLab);
-  UI.btnResetWeights.addEventListener('click', resetWeightsAndLab);
-
-  // Speed Slider
-  UI.trainingSpeed.addEventListener('input', (e) => {
-    const val = parseInt(e.target.value);
-    if (val < 40) UI.speedLabel.textContent = "Instant";
-    else if (val < 120) UI.speedLabel.textContent = "Fast";
-    else if (val < 250) UI.speedLabel.textContent = "Normal";
-    else UI.speedLabel.textContent = "Slow";
+  // Load into RAM Button
+  DOM.btnLoadRAM.addEventListener('click', () => {
+    crawlLab.loadModelToRAM();
+    renderCrawlView();
   });
 }
 
-// Initial Boot
 function init() {
-  setupEventListeners();
-  switchStage(1);
-  resetWeightsAndLab();
+  setupCrawlEventListeners();
+  crawlLab.setStep(1);
+  renderCrawlView();
 }
 
 window.addEventListener('DOMContentLoaded', init);

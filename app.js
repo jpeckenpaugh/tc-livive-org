@@ -489,6 +489,104 @@ function setupCrawlEventListeners() {
       renderInferenceResult();
     }
   });
+
+  // =======================================================================
+  // Walkthrough Slide Deck Controller
+  // =======================================================================
+  const wtDialog = document.getElementById('walkthrough-dialog');
+  const btnOpenWalkthrough = document.getElementById('btn-open-walkthrough');
+  const btnCloseWalkthrough = document.getElementById('btn-close-walkthrough');
+  const btnWtPrev = document.getElementById('btn-wt-prev');
+  const btnWtNext = document.getElementById('btn-wt-next');
+  const btnEnterLab = document.getElementById('btn-enter-lab');
+  const wtStepCounter = document.getElementById('wt-step-counter');
+  const wtSlides = document.querySelectorAll('.wt-slide');
+  const wtDots = document.querySelectorAll('.wt-dot');
+
+  let currentSlide = 1;
+  const totalSlides = wtSlides.length;
+
+  function showSlide(index) {
+    currentSlide = Math.max(1, Math.min(totalSlides, index));
+
+    wtSlides.forEach(slide => {
+      slide.classList.toggle('active', parseInt(slide.dataset.slide) === currentSlide);
+    });
+
+    wtDots.forEach(dot => {
+      dot.classList.toggle('active', parseInt(dot.dataset.slide) === currentSlide);
+    });
+
+    if (wtStepCounter) {
+      wtStepCounter.textContent = `Slide ${currentSlide} of ${totalSlides}`;
+    }
+    if (btnWtPrev) {
+      btnWtPrev.disabled = currentSlide === 1;
+    }
+    if (btnWtNext) {
+      btnWtNext.textContent = currentSlide === totalSlides ? "Done ✓" : "Next →";
+    }
+  }
+
+  if (btnOpenWalkthrough && wtDialog) {
+    btnOpenWalkthrough.addEventListener('click', () => {
+      showSlide(1);
+      wtDialog.showModal();
+    });
+  }
+
+  if (btnCloseWalkthrough && wtDialog) {
+    btnCloseWalkthrough.addEventListener('click', () => {
+      wtDialog.close();
+    });
+  }
+
+  if (btnEnterLab && wtDialog) {
+    btnEnterLab.addEventListener('click', () => {
+      wtDialog.close();
+    });
+  }
+
+  if (btnWtPrev) {
+    btnWtPrev.addEventListener('click', () => {
+      showSlide(currentSlide - 1);
+    });
+  }
+
+  if (btnWtNext && wtDialog) {
+    btnWtNext.addEventListener('click', () => {
+      if (currentSlide === totalSlides) {
+        wtDialog.close();
+      } else {
+        showSlide(currentSlide + 1);
+      }
+    });
+  }
+
+  wtDots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      showSlide(parseInt(dot.dataset.slide));
+    });
+  });
+
+  if (wtDialog) {
+    wtDialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft') {
+        if (currentSlide > 1) showSlide(currentSlide - 1);
+      }
+    });
+
+    // Auto-launch on first visit
+    if (!localStorage.getItem('tc_livive_orientation_seen')) {
+      setTimeout(() => {
+        showSlide(1);
+        wtDialog.showModal();
+        localStorage.setItem('tc_livive_orientation_seen', 'true');
+      }, 350);
+    }
+  }
 }
 
 function init() {

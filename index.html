@@ -11,7 +11,12 @@
     <!-- Header -->
     <header class="app-header">
       <div class="logo-area">
-        <span class="badge">Interactive Lab</span>
+        <div class="logo-top-row">
+          <span class="badge">Interactive Lab</span>
+          <button class="btn btn-secondary btn-walkthrough-header" id="btn-open-walkthrough">
+            📖 Orientation Walkthrough (Slides)
+          </button>
+        </div>
         <h1>Training vs. Inference</h1>
         <p class="subtitle">Demystifying "How AI Actually Works" with Zero Black Boxes</p>
       </div>
@@ -260,6 +265,249 @@
       </div>
     </div>
   </div>
+
+  <!-- ======================================================== -->
+  <!-- ORIENTATION WALKTHROUGH SLIDE DECK (MODAL DIALOG)        -->
+  <!-- ======================================================== -->
+  <dialog class="walkthrough-modal" id="walkthrough-dialog">
+    <div class="wt-content">
+      <!-- Modal Header -->
+      <div class="wt-header">
+        <div class="wt-title-meta">
+          <span class="wt-badge">Executive Primer</span>
+          <span class="wt-step-counter" id="wt-step-counter">Slide 1 of 6</span>
+        </div>
+        <button class="btn-close" id="btn-close-walkthrough" aria-label="Close Walkthrough">&times;</button>
+      </div>
+
+      <!-- Slide Deck Viewport -->
+      <div class="wt-body" id="wt-slide-viewport">
+        <!-- Slide 1: Computation vs. Inference (The Paradox) -->
+        <div class="wt-slide active" data-slide="1">
+          <div class="wt-slide-header">
+            <h3>1. The Paradox: Computation vs. Inference</h3>
+            <p class="wt-subhead">Why couldn't our fastest supercomputers understand a 3-word sentence?</p>
+          </div>
+          
+          <div class="wt-comparison-grid">
+            <div class="wt-comp-card calculator-card">
+              <div class="comp-badge">Rigid Computation (Pocket Calculator)</div>
+              <div class="comp-input font-mono">
+                <code>((4,812 × 37.5) - 8,941) ÷ 1.25 = ?</code>
+              </div>
+              <div class="comp-reaction">
+                <div class="reaction-item">
+                  <span class="actor">Pocket Calculator:</span>
+                  <span class="verdict success">⚡ Solved in 0.00001s: <strong>137,207.2</strong></span>
+                </div>
+                <div class="reaction-item">
+                  <span class="actor">Human Mind:</span>
+                  <span class="verdict struggle">🤯 Needs scrap paper, takes 3 minutes!</span>
+                </div>
+              </div>
+              <p class="comp-desc">
+                <strong>Computation:</strong> A human engineer wrote exact arithmetic rules in code. 100% exact and deterministic.
+              </p>
+            </div>
+
+            <div class="wt-comp-card ai-card">
+              <div class="comp-badge">Messy Inference (AI Model)</div>
+              <div class="comp-input font-serif">
+                <code>"I loved it!" ➔ Good or bad comment?</code>
+              </div>
+              <div class="comp-reaction">
+                <div class="reaction-item">
+                  <span class="actor">4-Year-Old Child:</span>
+                  <span class="verdict success">⚡ Answers in 0.1s: <em>"Obviously good!"</em></span>
+                </div>
+                <div class="reaction-item">
+                  <span class="actor">Pocket Calculator:</span>
+                  <span class="verdict error">🛑 Blank stare: <code>SYNTAX ERROR</code></span>
+                </div>
+              </div>
+              <p class="comp-desc">
+                <strong>Inference:</strong> There is no algebraic equation for "love". A computer has no human button for emotions!
+              </p>
+            </div>
+          </div>
+
+          <div class="wt-callout">
+            <strong>The Core Question:</strong> If no human engineer can write rules for every English sentence, <em>how does software evaluate language?</em> It must discover patterns through <strong>Training</strong>.
+          </div>
+        </div>
+
+        <!-- Slide 2: What is an AI "Model"? -->
+        <div class="wt-slide" data-slide="2">
+          <div class="wt-slide-header">
+            <h3>2. What is an AI "Model"?</h3>
+            <p class="wt-subhead">Software that maps messy inputs to decisions.</p>
+          </div>
+
+          <div class="wt-diagram-box">
+            <div class="flow-step">
+              <span class="flow-pill">Raw Input</span>
+              <div class="flow-data">"I loved it!"</div>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step model-box">
+              <span class="flow-pill accent">AI Model</span>
+              <div class="flow-data font-mono">[ Dials & Lookups ]</div>
+              <span class="flow-sub">Starts 100% Blank!</span>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step">
+              <span class="flow-pill success">Output Decision</span>
+              <div class="flow-data font-mono">Positive (95%)</div>
+            </div>
+          </div>
+
+          <div class="wt-text-points">
+            <p>• An AI model is <strong>not a conscious brain</strong> or magic. It is simply a mathematical lookup engine or dial matrix.</p>
+            <p>• When newly created on Day 1, its memory is a <strong>complete blank slate</strong>. It has zero knowledge of English, joy, or anger.</p>
+          </div>
+        </div>
+
+        <!-- Slide 3: Samples (The Ground Truth on Disk) -->
+        <div class="wt-slide" data-slide="3">
+          <div class="wt-slide-header">
+            <h3>3. Samples: The Historical Ground Truth</h3>
+            <p class="wt-subhead">Past observations paired with known outcomes.</p>
+          </div>
+
+          <div class="wt-samples-deck">
+            <div class="sample-flashcard pos">
+              <span class="card-tag">+ Positive Ground Truth</span>
+              <div class="card-text">"The service was great and fast."</div>
+            </div>
+            <div class="sample-flashcard neg">
+              <span class="card-tag">- Negative Ground Truth</span>
+              <div class="card-text">"The service was terrible and slow."</div>
+            </div>
+          </div>
+
+          <div class="wt-text-points">
+            <p>• Since humans cannot write rigid if-then rules for human speech, we supply <strong>Training Samples</strong>.</p>
+            <p>• These live as passive, static text files on <strong>Disk Storage (SSD)</strong> when the power is off.</p>
+            <p>• On disk, raw files have zero predictive power. They are simply dormant evidence waiting to be processed.</p>
+          </div>
+        </div>
+
+        <!-- Slide 4: Training (Distillation into Memory) -->
+        <div class="wt-slide" data-slide="4">
+          <div class="wt-slide-header">
+            <h3>4. Training: Crunching Raw Data into an Artifact</h3>
+            <p class="wt-subhead">A one-way distillation process that discards the raw text.</p>
+          </div>
+
+          <div class="wt-diagram-box">
+            <div class="flow-step">
+              <span class="flow-pill">Disk (SSD)</span>
+              <div class="flow-data">Raw Sentences</div>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step compute-box">
+              <span class="flow-pill warning">Training Job (CPU/GPU)</span>
+              <div class="flow-data">Tokenize & Tally Clues</div>
+              <span class="flow-sub">Burns processing time</span>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step model-box">
+              <span class="flow-pill accent">Compiled Model in RAM</span>
+              <div class="flow-data font-mono">{ "great": +1, "slow": -1 }</div>
+              <span class="flow-sub">Raw text is discarded!</span>
+            </div>
+          </div>
+
+          <div class="wt-text-points">
+            <p>• <strong>Training is not loading:</strong> Training is the computation that reads raw sentences, counts clue associations, and produces a tiny compiled dictionary artifact (<code>model.json</code>).</p>
+            <p>• <strong>The Discard Step:</strong> Once training is finished, <em>the computer throws away the original training text!</em> The model only keeps the distilled numbers in memory.</p>
+          </div>
+        </div>
+
+        <!-- Slide 5: Inference (Real-Time Scoring) -->
+        <div class="wt-slide" data-slide="5">
+          <div class="wt-slide-header">
+            <h3>5. Inference: Evaluating New, Unseen Inputs</h3>
+            <p class="wt-subhead">Real-time scoring against active memory in RAM.</p>
+          </div>
+
+          <div class="wt-diagram-box">
+            <div class="flow-step">
+              <span class="flow-pill">New Live Input</span>
+              <div class="flow-data font-serif">"Shipping was incredibly slow."</div>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step model-box">
+              <span class="flow-pill">CPU Checks RAM</span>
+              <div class="flow-data font-mono">Found: "slow" (-1)</div>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step">
+              <span class="flow-pill error">Output Decision</span>
+              <div class="flow-data font-mono">100% Negative</div>
+            </div>
+          </div>
+
+          <div class="wt-text-points">
+            <p>• <strong>Inference is read-only:</strong> The CPU evaluates the incoming sentence in milliseconds by checking memory in RAM.</p>
+            <p>• <strong>The Model Does Not Learn During Inference:</strong> Testing the sentence does not alter RAM. It is a one-way mathematical calculation.</p>
+            <p>• <strong>Blind Spots:</strong> If a customer uses words never observed during training, the model cannot guess—it has an Out-of-Vocabulary blind spot!</p>
+          </div>
+        </div>
+
+        <!-- Slide 6: Your Lab Roadmap -->
+        <div class="wt-slide" data-slide="6">
+          <div class="wt-slide-header">
+            <h3>6. Your Hands-On Lab Roadmap</h3>
+            <p class="wt-subhead">Explore these four tangible steps in Module 1.</p>
+          </div>
+
+          <div class="wt-roadmap-grid">
+            <div class="roadmap-card">
+              <span class="rm-num">View 1</span>
+              <h4>The Blank Slate</h4>
+              <p>Experience uncalibrated baseline guessing when RAM is empty (50% coin toss).</p>
+            </div>
+            <div class="roadmap-card">
+              <span class="rm-num">View 2</span>
+              <h4>The 2-Sample Model</h4>
+              <p>Train 2 sentences on disk, load to RAM, and discover AI blind spots.</p>
+            </div>
+            <div class="roadmap-card">
+              <span class="rm-num">View 3</span>
+              <h4>Scaling the Data</h4>
+              <p>Watch RAM token coverage expand to 10 samples and resolve blind spots.</p>
+            </div>
+            <div class="roadmap-card">
+              <span class="rm-num">View 4</span>
+              <h4>Try It for Yourself</h4>
+              <p>Type your own custom sentences and watch the processor calculate live!</p>
+            </div>
+          </div>
+
+          <div class="wt-final-cta">
+            <button class="btn btn-accent btn-large" id="btn-enter-lab">
+              🚀 Enter the Interactive Lab
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer Nav -->
+      <div class="wt-footer">
+        <button class="btn btn-secondary" id="btn-wt-prev" disabled>← Previous</button>
+        <div class="wt-dots" id="wt-dots-container">
+          <span class="wt-dot active" data-slide="1"></span>
+          <span class="wt-dot" data-slide="2"></span>
+          <span class="wt-dot" data-slide="3"></span>
+          <span class="wt-dot" data-slide="4"></span>
+          <span class="wt-dot" data-slide="5"></span>
+          <span class="wt-dot" data-slide="6"></span>
+        </div>
+        <button class="btn btn-primary" id="btn-wt-next">Next →</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="app.js"></script>
 </body>

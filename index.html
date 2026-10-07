@@ -48,7 +48,7 @@
       <!-- 3-View Linear Sub-Navigation -->
       <section class="crawl-subnav-banner">
         <div class="subnav-header">
-          <span class="subnav-label">The 3-Step Hardware Progression:</span>
+          <span class="subnav-label">The 4-Step Hardware Progression:</span>
           <div class="crawl-step-buttons">
             <button class="crawl-step-btn active" data-step="1" id="crawl-btn-step-1">
               <span class="step-badge">View 1</span>
@@ -64,6 +64,11 @@
               <span class="step-badge">View 3</span>
               <span class="step-name">Scaling the Data</span>
               <span class="step-summary">10 Samples & Token Coverage</span>
+            </button>
+            <button class="crawl-step-btn" data-step="4" id="crawl-btn-step-4">
+              <span class="step-badge">View 4</span>
+              <span class="step-name">Try It Yourself</span>
+              <span class="step-summary">Custom Text vs. Trained Model</span>
             </button>
           </div>
         </div>
@@ -168,8 +173,17 @@
 
           <div class="panel-body">
             <div class="info-callout">
-              <strong>Inference Principle:</strong> The CPU evaluates new input sentences against the active lookup table in RAM. 
+              <strong>Inference Principle:</strong> The CPU evaluates input sentences against the active lookup table in RAM. 
               <strong>Inference does not update memory or learn</strong>—it is a read-only mathematical calculation.
+            </div>
+
+            <!-- Custom User Input (Active in View 4) -->
+            <div class="custom-input-card" id="crawl-custom-input-card" style="display: none;">
+              <label class="field-label" for="crawl-user-input">Type your own review to test:</label>
+              <div class="input-row">
+                <input type="text" id="crawl-user-input" value="The service was fast and great communication." placeholder="Type any sentence to see how RAM scores it..." autocomplete="off">
+                <button class="btn btn-primary" id="btn-crawl-eval-user">Evaluate</button>
+              </div>
             </div>
 
             <!-- Preset Test Cards for Current View -->

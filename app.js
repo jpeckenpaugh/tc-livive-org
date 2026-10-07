@@ -54,6 +54,20 @@ const CRAWL_DATASETS = {
       { id: "s3-3", text: "I really loved the experience." },
       { id: "s3-4", text: "The package arrived broken and damaged." }
     ]
+  },
+  step4: {
+    diskFiles: [
+      // 4 Focused Samples (2 Positive / 2 Negative)
+      { text: "The service was great and fast.", label: "positive" },
+      { text: "Helpful team solved my issue with fantastic communication.", label: "positive" },
+      { text: "The service was terrible and slow.", label: "negative" },
+      { text: "Awful support broke my account with frustrating delay.", label: "negative" }
+    ],
+    tests: [
+      { id: "s4-1", text: "Great communication and fast resolution." },
+      { id: "s4-2", text: "Terrible delay and slow response." },
+      { id: "s4-3", text: "The package was delivered on Tuesday." }
+    ]
   }
 };
 
@@ -81,6 +95,16 @@ class CrawlHardwareLab {
     const dataset = CRAWL_DATASETS[`step${this.currentStep}`];
     this.activeTestSentence = dataset.tests[0].text;
     this.activeTestId = dataset.tests[0].id;
+
+    // View 4 starts with model pre-trained and loaded in RAM for immediate interactive exploration
+    if (this.currentStep === 4) {
+      this.trainModel();
+      this.loadModelToRAM();
+      if (DOM.crawlUserInput && DOM.crawlUserInput.value) {
+        this.activeTestSentence = DOM.crawlUserInput.value;
+        this.activeTestId = "custom-user";
+      }
+    }
   }
 
   // Action 1: Train Model (reads raw data on disk, tokenizes, counts tallies)
@@ -194,6 +218,9 @@ const DOM = {
   ramTableBody: document.getElementById('ram-table-body'),
 
   // Inference Right Panel
+  crawlCustomInputCard: document.getElementById('crawl-custom-input-card'),
+  crawlUserInput: document.getElementById('crawl-user-input'),
+  btnCrawlEvalUser: document.getElementById('btn-crawl-eval-user'),
   crawlTestCards: document.getElementById('crawl-test-cards'),
   crawlVerdictTag: document.getElementById('crawl-verdict-tag'),
   crawlTokenDisplay: document.getElementById('crawl-token-display'),
@@ -220,6 +247,11 @@ const STEP_META = {
     badge: "View 3: Scaling the Data",
     title: "Scaling Data ➔ Token Coverage & Loanword Reality",
     desc: "Training on 10 samples expands RAM vocabulary (~40 tokens) to eliminate blind spots. Notice how loanwords ('excelente', 'magnifique') are stored as plain string tokens."
+  },
+  4: {
+    badge: "View 4: Try It for Yourself",
+    title: "4-Sample Model: Interactive Playground",
+    desc: "Type any sentence you like! Observe in real time which words hit the active RAM lookup table, which words become blind spots (gray pills), and how the CPU calculates the score."
   }
 };
 
@@ -310,6 +342,13 @@ function renderCrawlView() {
     }).join('');
   }
 
+  // --- Render Custom Input or Presets ---
+  if (step === 4) {
+    DOM.crawlCustomInputCard.style.display = "flex";
+  } else {
+    DOM.crawlCustomInputCard.style.display = "none";
+  }
+
   // --- Render Test Preset Cards ---
   DOM.crawlTestCards.innerHTML = dataset.tests.map(t => {
     const isSelected = t.id === crawlLab.activeTestId;
@@ -328,6 +367,9 @@ function renderCrawlView() {
     btn.addEventListener('click', () => {
       crawlLab.activeTestId = btn.dataset.testid;
       crawlLab.activeTestSentence = btn.dataset.text;
+      if (step === 4) {
+        DOM.crawlUserInput.value = btn.dataset.text;
+      }
       renderCrawlView();
     });
   });
@@ -423,6 +465,29 @@ function setupCrawlEventListeners() {
   DOM.btnLoadRAM.addEventListener('click', () => {
     crawlLab.loadModelToRAM();
     renderCrawlView();
+  });
+
+  // Custom User Input Evaluation in View 4
+  function evaluateCustomInput() {
+    const text = DOM.crawlUserInput.value.trim();
+    if (!text) return;
+    crawlLab.activeTestSentence = text;
+    crawlLab.activeTestId = "custom-user";
+    renderCrawlView();
+  }
+
+  DOM.btnCrawlEvalUser.addEventListener('click', evaluateCustomInput);
+  DOM.crawlUserInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') evaluateCustomInput();
+  });
+  DOM.crawlUserInput.addEventListener('input', () => {
+    // Real-time evaluation as the user types
+    const text = DOM.crawlUserInput.value.trim();
+    if (text) {
+      crawlLab.activeTestSentence = text;
+      crawlLab.activeTestId = "custom-user";
+      renderInferenceResult();
+    }
   });
 }
 

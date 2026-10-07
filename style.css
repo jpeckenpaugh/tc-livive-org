@@ -490,6 +490,43 @@ body {
 .weight-tag.neg { background: var(--neg-bg); color: var(--neg-color); }
 .weight-tag.neutral { background: rgba(255,255,255,0.05); color: var(--text-muted); }
 
+/* Custom User Input Card */
+.custom-input-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #38bdf8;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input-row input {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+
+.input-row input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
 /* Test Cards Container */
 .test-cards-container {
   display: flex;

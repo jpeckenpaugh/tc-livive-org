@@ -43,7 +43,7 @@ const CRAWL_DATASETS = {
       { text: "The build quality is truly magnifique.", label: "positive" },
       // 5 Negative
       { text: "The service was terrible and slow.", label: "negative" },
-      { text: "The package arrived broken and damaged.", label: "negative" },
+      { text: "The package was broken and arrived damaged.", label: "negative" },
       { text: "Awful quality broke immediately on day one.", label: "negative" },
       { text: "Completely useless product and rude customer support.", label: "negative" },
       { text: "Disappointing experience with constant crashes.", label: "negative" }

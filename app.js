@@ -236,17 +236,17 @@ const STEP_META = {
   1: {
     badge: "View 1: The Blank Slate",
     title: "Empty RAM: Baseline Guessing",
-    desc: "Computers do not inherently 'know English' or human emotions. Without a compiled model loaded in RAM, the processor has zero reference clues and must resort to an uncalibrated 50/50 coin toss."
+    desc: "Computers have no built-in model of English or emotion. With no trained model loaded, there is nothing to score against; the lab's baseline is 50% — no better than a coin toss."
   },
   2: {
     badge: "View 2: The 2-Sample Model",
     title: "Train ➔ Load ➔ Generalization & Blind Spots",
-    desc: "Training compiles raw text into an artifact; loading puts it into RAM. The model generalizes cleanly on shared words ('great', 'slow'), but is totally blind to unobserved words."
+    desc: "Training compiles raw text into an artifact; loading puts it into RAM. This model generalizes cleanly on shared words ('great', 'slow'), but ignores every token it never saw in training."
   },
   3: {
     badge: "View 3: Scaling the Data",
     title: "Scaling Data ➔ Token Coverage & Loanword Reality",
-    desc: "Training on 10 samples expands RAM vocabulary (~40 tokens) to eliminate blind spots. Notice how loanwords ('excelente', 'magnifique') are stored as plain string tokens."
+    desc: "Training on 10 samples expands the RAM vocabulary (~40 tokens) and closes most of the earlier blind spots. Notice how loanwords ('excelente', 'magnifique') are stored as plain string tokens."
   },
   4: {
     badge: "View 4: Try It for Yourself",
@@ -444,6 +444,14 @@ function setupCrawlEventListeners() {
       Object.keys(DOM.moduleContainers).forEach(m => {
         DOM.moduleContainers[m].classList.toggle('active', m === targetModule);
       });
+    });
+  });
+
+  // In-page "next step" links that jump to a module tab
+  document.querySelectorAll('[data-goto-module]').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const tab = document.querySelector(`.stage-btn[data-module="${trigger.dataset.gotoModule}"]`);
+      if (tab) tab.click();
     });
   });
 

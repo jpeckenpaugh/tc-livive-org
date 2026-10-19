@@ -1167,3 +1167,250 @@ body {
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
 }
 
+
+/* ============================================================
+   Next Step Rail + Jog/Run chapters
+   ============================================================ */
+
+.btn-secondary {
+  background: rgba(51, 65, 85, 0.6);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(71, 85, 105, 0.8);
+  border-color: #64748b;
+}
+
+.btn-large {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+a.btn { text-decoration: none; }
+
+/* Next step rail */
+.next-step-rail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1.1rem 1.35rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background:
+    linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(14, 165, 233, 0.08)),
+    var(--bg-secondary);
+}
+
+.nsr-copy { flex: 1 1 420px; min-width: 0; }
+
+.nsr-kicker {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 0.25rem;
+}
+
+.nsr-copy h3 { font-size: 1.05rem; margin-bottom: 0.25rem; }
+.nsr-copy p { font-size: 0.85rem; color: var(--text-muted); max-width: 78ch; }
+.nsr-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* Chapter layout */
+.chapter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .chapter-grid { grid-template-columns: 1fr; }
+}
+
+.chapter-lede { font-size: 0.88rem; color: var(--text-muted); }
+.chapter-note {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  border-top: 1px dashed var(--border-color);
+  padding-top: 0.7rem;
+}
+.chapter-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.85rem; }
+
+/* Era comparison */
+.era-card {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.85rem;
+  margin-bottom: 0.6rem;
+}
+.era-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  margin-bottom: 0.4rem;
+}
+.era-tag.crawl {
+  background: var(--pos-bg);
+  color: var(--pos-color);
+  border: 1px solid var(--pos-border);
+}
+.era-tag.jog {
+  background: var(--neutral-bg);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.era-equation {
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  background: rgba(2, 6, 23, 0.6);
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.35rem;
+  overflow-x: auto;
+}
+.era-card p { font-size: 0.78rem; color: var(--text-dim); }
+
+/* Stat grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.stat-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.stat-value { font-size: 1.3rem; font-weight: 800; color: #38bdf8; line-height: 1.1; }
+.stat-label { font-size: 0.7rem; color: var(--text-dim); line-height: 1.3; }
+
+/* Code blocks */
+.code-block {
+  background: #070c17;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin: 0.7rem 0;
+}
+.code-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.code-head a { color: #7dd3fc; text-decoration: none; white-space: nowrap; }
+.code-head a:hover { text-decoration: underline; }
+.code-block pre { margin: 0; padding: 0.85rem 0.9rem; overflow-x: auto; }
+.code-block code {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+  white-space: pre;
+}
+
+/* Chapter tables */
+.shapes-table { margin-top: 0.8rem; }
+.pillars-table td { vertical-align: top; }
+.pillars-table code { font-family: var(--font-mono); font-size: 0.72rem; color: #7dd3fc; }
+
+/* Generated-sample chips */
+.chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0; }
+.chip {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: #bae6fd;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+/* ONNX flow diagram */
+.onnx-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+}
+.onnx-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: rgba(51, 65, 85, 0.6);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.7rem;
+  text-align: center;
+}
+.onnx-node strong { font-size: 0.72rem; }
+.onnx-node span { font-size: 0.62rem; color: var(--text-dim); font-family: var(--font-mono); }
+.onnx-node.op { background: rgba(59, 130, 246, 0.16); border-color: rgba(59, 130, 246, 0.45); }
+.onnx-arrow { color: var(--text-dim); font-size: 0.85rem; }
+
+/* Proof grid */
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .proof-grid { grid-template-columns: 1fr; }
+}
+
+.proof-card {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+}
+.proof-num { font-size: 0.65rem; font-weight: 800; color: #38bdf8; letter-spacing: 0.08em; }
+.proof-card h3 { font-size: 0.9rem; margin: 0.15rem 0 0.3rem; }
+.proof-card p { font-size: 0.76rem; color: var(--text-muted); }
+.proof-card code { font-family: var(--font-mono); font-size: 0.72rem; color: #7dd3fc; }
+
+/* Chapter badges */
+.jog-badge { background: #f59e0b; color: #3b2500; }
+.run-badge { background: #8b5cf6; color: #f5f3ff; }
+
+/* Roadmap "next" cards */
+.roadmap-card.next {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.6));
+}
+
+@media (max-width: 700px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .next-step-rail { flex-direction: column; align-items: flex-start; }
+  .nsr-copy { flex: 0 1 auto; width: 100%; }
+  .nsr-actions { width: 100%; }
+}

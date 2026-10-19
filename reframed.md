@@ -86,7 +86,7 @@ The application top bar provides a linear 4-stage progression toggle:
     Positive Evidence: 0 | Negative Evidence: 0
     Score: 50.0% (No reference data available in RAM)
     ```
-  * Callout: Demonstrates that the machine does not "know English." Untrained inference is a pure guess.
+  * Callout: Demonstrates that an untrained model has no learned evidence to score against. With nothing in RAM, the lab's baseline is a pure 50% guess.
 
 ---
 
@@ -123,7 +123,7 @@ The application top bar provides a linear 4-stage progression toggle:
   * Text: *"The package arrived broken and damaged."*
   * Matches in RAM: None (except perhaps neutral connector `"and"`).
   * Output: **50.0% Coin Toss**.
-  * Takeaway: Explains why AI fails on novel phrasing—it doesn't understand frustration; it checks memory matches.
+  * Takeaway: Explains why this model fails on novel phrasing — it has no learned evidence for that phrasing; it only checks memory matches.
 
 ---
 

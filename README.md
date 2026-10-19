@@ -2,7 +2,7 @@
 
 > Demystifying "How AI Actually Works" — with zero black boxes.
 
-**Live lab:** <https://tc.livive.org/> · **Repo:** <https://github.com/jpeckenpaugh/tc-livive-org>
+**Live lab:** <https://tc.livive.net/> · **Repo:** <https://github.com/jpeckenpaugh/tc-livive-org>
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
@@ -23,8 +23,8 @@ plain, human-readable numbers.
 ## The core idea
 
 A pocket calculator is a **computation** machine: a human wrote exact arithmetic rules, and it
-executes them perfectly. But there is no algebraic equation for *"I loved it!"* — so a computer
-has to discover patterns through **training** instead.
+executes them perfectly. Language has no such hand-written procedure — not one that covers every
+sentence — so this lab learns the mapping from labeled examples through **training** instead.
 
 The lab teaches this with four artifacts and two processes:
 
@@ -41,9 +41,9 @@ learn** — it is a one-way calculation against whatever is in memory.
 
 ## Live demo
 
-The app is deployed to GitHub Pages at a custom domain (**`tc.livive.org`**, via the `CNAME` file).
+The app is deployed to GitHub Pages at a custom domain (**`tc.livive.net`**, via the `CNAME` file).
 
-https://tc.livive.org/
+https://tc.livive.net/
 
 ### Gallery
 
@@ -59,22 +59,23 @@ A 30-second, 720p walkthrough is included at [`demos/latest/demo.webm`](demos/la
 
 ## Curriculum
 
-The app is organized as a four-module journey. **Module 1 is fully implemented**; the later
-modules are scaffolded as placeholders for future work.
+The app is organized as a four-module journey. Module 1 runs entirely in this repo. Modules 3 and
+4 are **live chapters that hand off to [TROT](https://trot.livive.net/)** — the real Rust model
+behind the story. Module 2 remains a placeholder.
 
 | # | Module | Concept | Status |
 | --- | --- | --- | --- |
-| 1 | **Hardware & Memory** *(Crawl)* | Disk vs. RAM, train → load, blind spots | ✅ Implemented |
+| 1 | **Hardware & Memory** *(Crawl)* | Disk vs. RAM, train → load, blind spots | ✅ Implemented here |
 | 2 | **Black Text on White Space** *(Walk)* | 1-neuron binary teeter-totter (sigmoid) | ⏳ Placeholder |
-| 3 | **Red, Green, and Blue** *(Jog)* | 3-neuron spectrum (Positive / Negative / Neutral) | ⏳ Placeholder |
-| 4 | **Three Lanes in Two Dimensions** *(Run)* | Enterprise multi-head router (Tone + Department) | ⏳ Placeholder |
+| 3 | **The Real Model** *(Jog)* | Rust MLP, real gradients, live trace | ✅ Chapter here → TROT |
+| 4 | **The Artifact** *(Run)* | ONNX export, Netron, round-trip fidelity | ✅ Chapter here → TROT |
 
 ### Module 1 — the 4-view hardware progression
 
-1. **The Blank Slate** — Empty RAM. With no model loaded, the processor has no clues and falls
-   back to an uncalibrated **50/50 coin toss**.
+1. **The Blank Slate** — Empty RAM. With no trained model loaded, there is nothing to score
+   against; the lab's baseline is **50%** — no better than a coin toss.
 2. **The 2-Sample Model** — Train on two sentences, load the artifact into RAM, and watch the
-   model generalize on shared words while going totally blind on unseen ones.
+   model generalize on shared words while ignoring tokens it never saw in training.
 3. **Scaling the Data** — Retrain on 10 samples. Vocabulary coverage expands, blind spots close,
    and loanwords like *"excelente"* / *"magnifique"* appear as ordinary tokens.
 4. **Try It Yourself** — Type any sentence and watch live which words hit the RAM lookup table,
@@ -82,6 +83,23 @@ modules are scaffolded as placeholders for future work.
 
 A **6-slide "Executive Primer"** orientation walkthrough (Computation vs. Inference, what a model
 is, samples, training, inference, and the lab roadmap) auto-launches on the first visit.
+
+## The next step: TROT
+
+Crawl teaches the intuition with tally marks. **TROT — the Transparent Rust ONNX Trainer** —
+supplies the machine. It is a separate project ([`trot-livive-net`](https://github.com/jpeckenpaugh/trot-livive-net),
+live at [trot.livive.net](https://trot.livive.net/)) that trains a real MLP from scratch in Rust,
+compiled to WebAssembly, in the browser.
+
+Modules 3 and 4 in this lab are written chapters **about** TROT, in the same inspectable style as
+Module 1 — side-by-side era comparison, the actual forward/backward code, the seeded corpus
+grammar, ONNX graph anatomy, and the three proofs of artifact portability. The hands-on work then
+happens in TROT itself, linked panel by panel.
+
+- **Jog — the real model:** weights, gradients, and a traceable forward pass.
+- **Run — the artifact:** a hand-written ONNX export, inspectable in Netron, verified by round-trip.
+
+The lab stays static and dependency-free; the model, its Rust source, and its build live in TROT.
 
 ## How it works
 
@@ -118,7 +136,7 @@ Every step of that arithmetic is printed in the UI, alongside a gauge and color-
 ├── style.css                # Dark dashboard theme (CSS variables, grid/flex)
 ├── app.js                   # Core engine: tokenizer, train/load/infer, UI bindings
 ├── favicon.ico
-├── CNAME                    # tc.livive.org
+├── CNAME                    # tc.livive.net
 ├── run.sh                   # Serves the app locally on :8080
 ├── demos/latest/            # demo.webm + gallery/ screenshots + thumb.webp
 ├── test-runner/             # Dockerized Playwright smoke test + showcase recorder
@@ -169,8 +187,10 @@ The specs trace the design evolution and are the best source of deeper intent:
 
 ## Status
 
-Actively developed. Module 1 is feature-complete and covered by the smoke test; Modules 2–4 are
-placeholders. See the commit history for the latest work.
+Actively developed. Module 1 is feature-complete and covered by the smoke test. Modules 3 and 4
+are live chapters that link into TROT. Module 2 is still a placeholder, and the earlier
+3-neuron / multi-head drafts remain conceptual extensions. See the commit history for the latest
+work.
 
 ## License
 

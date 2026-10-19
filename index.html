@@ -25,24 +25,24 @@
       <!-- Top Module Navigation -->
       <nav class="stage-nav" aria-label="Curriculum Modules">
         <button class="stage-btn active" data-module="crawl" id="tab-module-crawl">
-          <span class="step-num">Module 1</span>
+          <span class="step-num">Module 1 · Crawl</span>
           <span class="step-title">Hardware & Memory (Crawl)</span>
           <span class="step-desc">Storage, RAM & Inference</span>
         </button>
         <button class="stage-btn" data-module="walk" id="tab-module-walk">
-          <span class="step-num">Module 2</span>
+          <span class="step-num">Module 2 · Walk</span>
           <span class="step-title">Black Text on White Space</span>
           <span class="step-desc">1-Neuron Binary Teeter-Totter</span>
         </button>
         <button class="stage-btn" data-module="jog" id="tab-module-jog">
-          <span class="step-num">Module 3</span>
-          <span class="step-title">Red, Green, and Blue</span>
-          <span class="step-desc">3-Neuron Spectrum (Pos/Neg/Neu)</span>
+          <span class="step-num">Module 3 · Jog</span>
+          <span class="step-title">The Real Model</span>
+          <span class="step-desc">Rust MLP · Gradients · Live Trace</span>
         </button>
         <button class="stage-btn" data-module="run" id="tab-module-run">
-          <span class="step-num">Module 4</span>
-          <span class="step-title">Three Lanes in Two Dims</span>
-          <span class="step-desc">Enterprise Multi-Task Router</span>
+          <span class="step-num">Module 4 · Run</span>
+          <span class="step-title">The Artifact</span>
+          <span class="step-desc">ONNX · Netron · Round-trip</span>
         </button>
       </nav>
     </header>
@@ -87,10 +87,30 @@
           <div class="banner-text">
             <h2 id="crawl-banner-title">View 1: The Blank Slate (Untrained Baseline)</h2>
             <p id="crawl-banner-desc">
-              Computers do not inherently "know English" or human emotions. Without a compiled model loaded in RAM, 
-              the processor has zero reference clues and must resort to an uncalibrated 50/50 coin toss.
+              Computers have no built-in model of English or emotion. With no trained model loaded,
+              there is nothing to score against; this lab's baseline is 50% — no better than a coin toss.
             </p>
           </div>
+        </div>
+      </section>
+
+      <!-- Next Step Rail: bridges Module 1 to the real model -->
+      <section class="next-step-rail" aria-label="Next step: the real model">
+        <div class="nsr-copy">
+          <span class="nsr-kicker">Next step · Jog &amp; Run</span>
+          <h3>You have seen the tally marks. Now see the actual model.</h3>
+          <p>
+            Everything so far is a story about counting. <strong>TROT</strong> is the machine behind
+            the story: a real MLP written from scratch in Rust, compiled to WebAssembly, trained in
+            your browser, and exported as a standard ONNX file. Every weight, gradient, and
+            multiplication is on the page.
+          </p>
+        </div>
+        <div class="nsr-actions">
+          <button class="btn btn-accent" data-goto-module="jog">Continue to Jog →</button>
+          <a class="btn btn-secondary" href="https://trot.livive.net/" target="_blank" rel="noopener">
+            Open the live trainer ↗
+          </a>
         </div>
       </section>
 
@@ -237,33 +257,440 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODULE 2: WALK (1-NEURON SIGMOID) [PLACEHOLDER CONTAINER] -->
+    <!-- MODULE 2: WALK (CONCEPTUAL 1-NEURON LOOP) [PLACEHOLDER]   -->
     <!-- ======================================================== -->
     <div class="module-container" id="module-walk-container">
       <div class="module-placeholder">
         <h3>Module 2: Black Text on White Space (1-Neuron Teeter-Totter)</h3>
-        <p>Interactive gradient descent and single-neuron Sigmoid calibration will be activated here in the upcoming turn.</p>
+        <p>
+          The conceptual training loop — weights as dials, sigmoid squashing, and a single bias.
+          This chapter is still being built; the real version of the loop already runs in
+          <strong>Module 3 · Jog</strong>.
+        </p>
       </div>
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODULE 3: JOG (3-NEURON RGB) [PLACEHOLDER CONTAINER]      -->
+    <!-- MODULE 3: JOG — THE REAL MODEL                            -->
     <!-- ======================================================== -->
     <div class="module-container" id="module-jog-container">
-      <div class="module-placeholder">
-        <h3>Module 3: Red, Green, and Blue (3-Neuron Spectrum)</h3>
-        <p>Independent multi-channel sentiment modeling (Positive, Negative, Neutral) will be activated here in the upcoming turn.</p>
-      </div>
+      <section class="stage-banner">
+        <div class="banner-content">
+          <div class="banner-badge jog-badge">Jog · Real Model</div>
+          <div class="banner-text">
+            <h2>Now here is the next step: the model is the code</h2>
+            <p>
+              Crawl taught you what data does. <strong>TROT</strong> shows you what a model
+              <em>is</em>: a real MLP written from scratch in Rust, compiled to WebAssembly, trained
+              live in your browser — with every weight, gradient, and multiplication on the page.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="icon">🔁</span>
+              <h2>Same input, two eras</h2>
+            </div>
+            <span class="status-pill">One sentence</span>
+          </div>
+          <div class="panel-body">
+            <p class="chapter-lede">
+              Send <em>"the service was great"</em> through both stages of the lab.
+            </p>
+
+            <div class="era-card">
+              <span class="era-tag crawl">Crawl · tally marks</span>
+              <div class="era-equation font-mono">P / (P + N) = 2 / (2 + 0) = 100%</div>
+              <p>Counts words in two buckets. Easy to read; hard to improve beyond more samples.</p>
+            </div>
+
+            <div class="era-card">
+              <span class="era-tag jog">Jog · real model</span>
+              <div class="era-equation font-mono">p = σ(W₂ · tanh(W₁x + b₁) + b₂)</div>
+              <p>Multiplies, activates, and squashes. The score is a product of learned numbers.</p>
+            </div>
+
+            <p class="chapter-note">
+              The tally table is a <em>lookup</em>. The MLP is a <em>function</em> — and every number
+              in it was learned by gradient descent, not typed by a human.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="icon">🦀</span>
+              <h2>TROT at a glance</h2>
+            </div>
+            <span class="status-pill">trot.livive.net</span>
+          </div>
+          <div class="panel-body">
+            <div class="stat-grid">
+              <div class="stat-card">
+                <span class="stat-value">417</span>
+                <span class="stat-label">parameters at a 50-token vocabulary</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">8</span>
+                <span class="stat-label">hidden units · one hidden layer</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">4</span>
+                <span class="stat-label">nodes in the exported ONNX graph</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">~1e-7</span>
+                <span class="stat-label">max round-trip prediction difference</span>
+              </div>
+            </div>
+
+            <div class="info-callout">
+              <strong>Not a wrapper.</strong> The forward pass, backward pass, SGD update, and even
+              the ONNX protobuf encoder are hand-written in the repo. No <code>ndarray</code>, no
+              <code>burn</code>, no autodiff — and the core crate has zero dependencies.
+            </div>
+
+            <p class="chapter-note">
+              TROT is deliberately binary sentiment. The 3-channel spectrum and the multi-head
+              router from earlier drafts remain conceptual extensions until a real version exists.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">📐</span>
+            <h2>The model is the code</h2>
+          </div>
+          <span class="status-pill font-mono">crates/trot-core/src/model.rs</span>
+        </div>
+        <div class="panel-body">
+          <p class="chapter-lede">
+            This is the entire forward pass. No layer abstraction, no library call — one nested loop
+            and a few scalar operations. If you can read a <code>for</code> loop, you can read the
+            model.
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="font-mono">model.rs · forward pass</span>
+              <a href="https://github.com/jpeckenpaugh/trot-livive-net/blob/main/crates/trot-core/src/model.rs#L60" target="_blank" rel="noopener">open exact lines ↗</a>
+            </div>
+            <pre><code>pub fn forward(&amp;self, x: &amp;[f32]) -&gt; Forward {
+    let (h, v) = (self.hidden, self.vocab);
+    let mut z1 = vec![0.0f32; h];
+    for j in 0..h {
+        let row = &amp;self.w1[j * v..j * v + v];
+        let mut acc = self.b1[j];
+        for i in 0..v {
+            acc += row[i] * x[i];
+        }
+        z1[j] = acc;
+    }
+    let hh: Vec&lt;f32&gt; = z1.iter().map(|&amp;z| z.tanh()).collect();
+    let mut z2 = self.b2;
+    for j in 0..h {
+        z2 += self.w2[j] * hh[j];
+    }
+    let p = sigmoid(z2);</code></pre>
+          </div>
+
+          <table class="data-table shapes-table">
+            <thead>
+              <tr><th>Tensor</th><th>Shape</th><th class="num-col">Values</th><th>What it means</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>W1</strong></td><td class="font-mono">8 × 50</td><td class="num-col">400</td><td>one row per hidden unit, one column per token</td></tr>
+              <tr><td><strong>b1</strong></td><td class="font-mono">8</td><td class="num-col">8</td><td>one bias per hidden unit</td></tr>
+              <tr><td><strong>W2</strong></td><td class="font-mono">8</td><td class="num-col">8</td><td>how much each hidden unit votes</td></tr>
+              <tr><td><strong>b2</strong></td><td class="font-mono">1</td><td class="num-col">1</td><td>the output bias</td></tr>
+              <tr><td><strong>total</strong></td><td class="font-mono">—</td><td class="num-col">417</td><td>every one of these is rendered live in TROT</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">∂</span>
+            <h2>The gradients are the code too</h2>
+          </div>
+          <span class="status-pill font-mono">crates/trot-core/src/train.rs</span>
+        </div>
+        <div class="panel-body">
+          <p class="chapter-lede">
+            Backpropagation here is a handful of multiplications. The chain rule is written out by
+            hand, then applied to every parameter.
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="font-mono">train.rs · one backward pass</span>
+              <a href="https://github.com/jpeckenpaugh/trot-livive-net/blob/main/crates/trot-core/src/train.rs#L25" target="_blank" rel="noopener">open exact lines ↗</a>
+            </div>
+            <pre><code>pub fn backward(m: &amp;Model, f: &amp;Forward, y: u8) -&gt; Gradients {
+    let (h, v) = (m.hidden, m.vocab);
+    let dz2 = f.p - y as f32;
+
+    let mut w2 = vec![0.0f32; h];
+    for j in 0..h {
+        w2[j] = dz2 * f.h[j];
+    }
+
+    let mut w1 = vec![0.0f32; h * v];
+    let mut b1 = vec![0.0f32; h];
+    for j in 0..h {
+        let dz1 = dz2 * m.w2[j] * (1.0 - f.h[j] * f.h[j]);
+        b1[j] = dz1;
+        let row = &amp;mut w1[j * v..j * v + v];
+        for i in 0..v {
+            row[i] = dz1 * f.x[i];
+        }
+    }
+    // ...
+}</code></pre>
+          </div>
+
+          <div class="info-callout">
+            <strong>It is tested, not just displayed.</strong> The Rust test suite includes a
+            gradient check that compares every analytic gradient against a central-difference
+            numerical approximation — the same test you would write in a numerical methods course.
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">🌱</span>
+            <h2>The data is the code too</h2>
+          </div>
+          <span class="status-pill font-mono">crates/trot-core/src/generator.rs</span>
+        </div>
+        <div class="panel-body">
+          <p class="chapter-lede">
+            There is no committed dataset blob. The corpus is a seeded template grammar: shared
+            function words, shared nouns, and class-specific adjectives.
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="font-mono">generator.rs · the corpus, abridged</span>
+              <a href="https://github.com/jpeckenpaugh/trot-livive-net/blob/main/crates/trot-core/src/generator.rs#L1" target="_blank" rel="noopener">open exact lines ↗</a>
+            </div>
+            <pre><code>const FUNC: [&amp;str; 12] = ["the", "a", "was", "seemed", "i", "found", ...];
+const NOUNS: [&amp;str; 14] = ["service", "delivery", "price", "staff", "food", ...];
+
+pub const POS_ADJ: [&amp;str; 12] = ["great", "fine", "fast", "reasonable", ...];
+pub const NEG_ADJ: [&amp;str; 12] = ["terrible", "slow", "overpriced", "rude", ...];</code></pre>
+          </div>
+
+          <div class="chip-row">
+            <span class="chip">the service was great and fast</span>
+            <span class="chip">the delivery seemed slow today</span>
+            <span class="chip">overall the staff felt friendly</span>
+            <span class="chip">the product was broken and disappointing</span>
+            <span class="chip">the wait was very reasonable</span>
+          </div>
+
+          <p class="chapter-note">
+            Default seed <strong>42</strong> · <strong>256</strong> sentences (adjustable 100–5,000)
+            · ~<strong>8%</strong> of labels deliberately flipped · deterministic <strong>80/20</strong>
+            train/test split · vocabulary bounded at <strong>50</strong> tokens so the weight grid
+            stays readable. Change the seed and you get a different corpus.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">▶</span>
+            <h2>Trace it yourself</h2>
+          </div>
+          <span class="status-pill">Live in your browser</span>
+        </div>
+        <div class="panel-body">
+          <p class="chapter-lede">
+            This lab can explain the model. TROT can <em>run</em> it. Open any of these views and the
+            numbers you have been reading about become the numbers on screen.
+          </p>
+          <div class="chapter-actions">
+            <a class="btn btn-accent" href="https://trot.livive.net/#panel-train" target="_blank" rel="noopener">Train it live ↗</a>
+            <a class="btn btn-primary" href="https://trot.livive.net/#panel-weights" target="_blank" rel="noopener">Inspect the weight grid ↗</a>
+            <a class="btn btn-secondary" href="https://trot.livive.net/#panel-trace" target="_blank" rel="noopener">Trace a prediction ↗</a>
+            <a class="btn btn-secondary" href="https://github.com/jpeckenpaugh/trot-livive-net" target="_blank" rel="noopener">Read the source ↗</a>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODULE 4: RUN (ENTERPRISE ROUTER) [PLACEHOLDER CONTAINER] -->
+    <!-- MODULE 4: RUN — THE ARTIFACT LEAVES THE LAB               -->
     <!-- ======================================================== -->
     <div class="module-container" id="module-run-container">
-      <div class="module-placeholder">
-        <h3>Module 4: Three Lanes in Two Dimensions (Multi-Task Router)</h3>
-        <p>Enterprise dual-head classification (Tone + Department Routing) will be activated here in the upcoming turn.</p>
-      </div>
+      <section class="stage-banner">
+        <div class="banner-content">
+          <div class="banner-badge run-badge">Run · Artifact</div>
+          <div class="banner-text">
+            <h2>The model stops being a page and becomes a file</h2>
+            <p>
+              Training is only half of the lifecycle. The other half is everything that has to
+              survive when the browser closes: the weights, the graph, the runtime that reloads
+              them — and the proof that the answer does not change.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="icon">📦</span>
+              <h2>From memory to artifact</h2>
+            </div>
+            <span class="status-pill">Four pillars, completed</span>
+          </div>
+          <div class="panel-body">
+            <p class="chapter-lede">
+              In Crawl, each pillar was a story. In TROT, each one is a real object you can point at.
+            </p>
+            <table class="data-table pillars-table">
+              <thead>
+                <tr><th>Pillar</th><th>Crawl</th><th>TROT</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Training data</strong></td><td>10 hand-written reviews</td><td>256 sentences from a seed</td></tr>
+                <tr><td><strong>Trained model</strong></td><td><code>{ great: { pos, neg } }</code></td><td><code>W1, b1, W2, b2</code> — 417 floats</td></tr>
+                <tr><td><strong>Loaded model</strong></td><td>JSON lookup in RAM</td><td>weights in WASM linear memory</td></tr>
+                <tr><td><strong>Inference</strong></td><td><code>P / (P + N)</code></td><td><code>σ(W₂ · tanh(W₁x + b₁) + b₂)</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="icon">🧩</span>
+              <h2>Anatomy of the .onnx</h2>
+            </div>
+            <span class="status-pill">opset 13 · IR 8</span>
+          </div>
+          <div class="panel-body">
+            <p class="chapter-lede">
+              Four nodes, named initializers, and nothing else. The graph reads like the Rust:
+            </p>
+
+            <div class="onnx-flow" aria-label="ONNX graph: input, Gemm, Tanh, Gemm, Sigmoid, probability">
+              <div class="onnx-node"><strong>input</strong><span>batch × 50</span></div>
+              <span class="onnx-arrow">→</span>
+              <div class="onnx-node op"><strong>Gemm</strong><span>W1, b1</span></div>
+              <span class="onnx-arrow">→</span>
+              <div class="onnx-node op"><strong>Tanh</strong><span>hidden</span></div>
+              <span class="onnx-arrow">→</span>
+              <div class="onnx-node op"><strong>Gemm</strong><span>W2, b2</span></div>
+              <span class="onnx-arrow">→</span>
+              <div class="onnx-node op"><strong>Sigmoid</strong><span>probability</span></div>
+            </div>
+
+            <div class="code-block">
+              <div class="code-head">
+                <span class="font-mono">onnx.rs · the graph, verbatim</span>
+                <a href="https://github.com/jpeckenpaugh/trot-livive-net/blob/main/crates/trot-core/src/onnx.rs#L145" target="_blank" rel="noopener">open exact lines ↗</a>
+              </div>
+              <pre><code>let gemm1 = node("Gemm", &amp;["input", "W1", "b1"], &amp;["z1"], &amp;[attr_int("transB", 1)]);
+let tanh = node("Tanh", &amp;["z1"], &amp;["h"], &amp;[]);
+let gemm2 = node("Gemm", &amp;["h", "W2", "b2"], &amp;["z2"], &amp;[attr_int("transB", 1)]);
+let sigmoid = node("Sigmoid", &amp;["z2"], &amp;["probability"], &amp;[]);</code></pre>
+            </div>
+
+            <p class="chapter-note">
+              The encoder is ~200 lines of hand-written protobuf. Initializers are named
+              <code>W1</code>, <code>b1</code>, <code>W2</code>, <code>b2</code> — the same names as
+              the struct fields, so the file is readable in Netron.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">✅</span>
+            <h2>Three proofs that the artifact is real</h2>
+          </div>
+          <span class="status-pill">Verified in CI</span>
+        </div>
+        <div class="panel-body">
+          <div class="proof-grid">
+            <div class="proof-card">
+              <span class="proof-num">01</span>
+              <h3>Portability</h3>
+              <p>
+                The trained weights leave the lab and load in a standard runtime —
+                <code>onnxruntime-web</code> in the browser, or <code>onnxruntime</code> in a
+                notebook. No server, no Rust toolchain.
+              </p>
+            </div>
+            <div class="proof-card">
+              <span class="proof-num">02</span>
+              <h3>Inspectability</h3>
+              <p>
+                The file opens in <a href="https://netron.app/" target="_blank" rel="noopener">Netron</a>.
+                The graph and initializers are readable by eye — the artifact is not a black box
+                either.
+              </p>
+            </div>
+            <div class="proof-card">
+              <span class="proof-num">03</span>
+              <h3>Round-trip fidelity</h3>
+              <p>
+                Export → reload → matching predictions. TROT compares every test-set prediction
+                against the in-browser model; the maximum difference is around
+                <code>1e-7</code>.
+              </p>
+            </div>
+          </div>
+
+          <div class="info-callout">
+            <strong>Why this closes the loop.</strong> The question "where is the model code?" now
+            has three answers: it is the repository, it is the page, and it is the
+            <code>.onnx</code> file.
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">🚀</span>
+            <h2>Take the artifact with you</h2>
+          </div>
+          <span class="status-pill">Run · export</span>
+        </div>
+        <div class="panel-body">
+          <p class="chapter-lede">
+            Open TROT, train the model, and export it. Then open the same file in Netron or reload it
+            in a standard runtime and watch the predictions match.
+          </p>
+          <div class="chapter-actions">
+            <a class="btn btn-accent" href="https://trot.livive.net/#panel-export" target="_blank" rel="noopener">Export the .onnx ↗</a>
+            <a class="btn btn-primary" href="https://trot.livive.net/#panel-export" target="_blank" rel="noopener">Run the round-trip check ↗</a>
+            <a class="btn btn-secondary" href="https://github.com/jpeckenpaugh/trot-livive-net/blob/main/crates/trot-core/src/onnx.rs" target="_blank" rel="noopener">Read onnx.rs ↗</a>
+            <a class="btn btn-secondary" href="https://github.com/jpeckenpaugh/trot-livive-net" target="_blank" rel="noopener">Open the repo ↗</a>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -286,8 +713,8 @@
         <!-- Slide 1: Computation vs. Inference (The Paradox) -->
         <div class="wt-slide active" data-slide="1">
           <div class="wt-slide-header">
-            <h3>1. The Paradox: Computation vs. Inference</h3>
-            <p class="wt-subhead">Why couldn't our fastest supercomputers understand a 3-word sentence?</p>
+            <h3>1. The Contrast: Computation vs. Inference</h3>
+            <p class="wt-subhead">Why can a calculator solve arithmetic instantly — yet has no operation for "I loved it"?</p>
           </div>
           
           <div class="wt-comparison-grid">
@@ -323,17 +750,17 @@
                 </div>
                 <div class="reaction-item">
                   <span class="actor">Pocket Calculator:</span>
-                  <span class="verdict error">🛑 Blank stare: <code>SYNTAX ERROR</code></span>
+                  <span class="verdict error">🛑 No language operation — outside its instruction set</span>
                 </div>
               </div>
               <p class="comp-desc">
-                <strong>Inference:</strong> There is no algebraic equation for "love". A computer has no human button for emotions!
+                <strong>Inference:</strong> There is no simple hand-written formula that maps arbitrary English to "positive" or "negative". The mapping has to be learned from examples.
               </p>
             </div>
           </div>
 
           <div class="wt-callout">
-            <strong>The Core Question:</strong> If no human engineer can write rules for every English sentence, <em>how does software evaluate language?</em> It must discover patterns through <strong>Training</strong>.
+            <strong>The Core Question:</strong> Language is open-ended and ambiguous, so a hand-written rule set is impractical to complete. <em>Where does the procedure come from instead?</em> One answer is to learn the mapping from labeled examples — that is <strong>Training</strong>.
           </div>
         </div>
 
@@ -363,8 +790,8 @@
           </div>
 
           <div class="wt-text-points">
-            <p>• An AI model is <strong>not a conscious brain</strong> or magic. It is simply a mathematical lookup engine or dial matrix.</p>
-            <p>• When newly created on Day 1, its memory is a <strong>complete blank slate</strong>. It has zero knowledge of English, joy, or anger.</p>
+            <p>• A model is <strong>not a conscious brain</strong> or magic. In this lab it is a mathematical lookup table; larger models are the same idea with many more dials.</p>
+            <p>• A newly initialized model has a <strong>blank slate</strong>. It has no learned associations with English, joy, or anger — until training gives it some.</p>
           </div>
         </div>
 
@@ -387,7 +814,7 @@
           </div>
 
           <div class="wt-text-points">
-            <p>• Since humans cannot write rigid if-then rules for human speech, we supply <strong>Training Samples</strong>.</p>
+            <p>• Hand-written rules don't cover the variety and ambiguity of natural language at scale, so we supply <strong>Training Samples</strong>.</p>
             <p>• These live as passive, static text files on <strong>Disk Storage (SSD)</strong> when the power is off.</p>
             <p>• On disk, raw files have zero predictive power. They are simply dormant evidence waiting to be processed.</p>
           </div>
@@ -421,7 +848,7 @@
 
           <div class="wt-text-points">
             <p>• <strong>Training is not loading:</strong> Training is the computation that reads raw sentences, counts clue associations, and produces a tiny compiled dictionary artifact (<code>model.json</code>).</p>
-            <p>• <strong>The Discard Step:</strong> Once training is finished, <em>the computer throws away the original training text!</em> The model only keeps the distilled numbers in memory.</p>
+            <p>• <strong>The Discard Step:</strong> Once training is finished, <em>this step discards the raw text.</em> The artifact keeps only the distilled numbers; the original sentences are no longer needed.</p>
           </div>
         </div>
 
@@ -450,9 +877,9 @@
           </div>
 
           <div class="wt-text-points">
-            <p>• <strong>Inference is read-only:</strong> The CPU evaluates the incoming sentence in milliseconds by checking memory in RAM.</p>
+            <p>• <strong>Inference is read-only:</strong> The model scores the incoming sentence in milliseconds by checking memory in RAM.</p>
             <p>• <strong>The Model Does Not Learn During Inference:</strong> Testing the sentence does not alter RAM. It is a one-way mathematical calculation.</p>
-            <p>• <strong>Blind Spots:</strong> If a customer uses words never observed during training, the model cannot guess—it has an Out-of-Vocabulary blind spot!</p>
+            <p>• <strong>Blind Spots:</strong> If a customer uses words never observed during training, this model has no learned evidence for them and falls back to 50% — an Out-of-Vocabulary blind spot.</p>
           </div>
         </div>
 
@@ -460,7 +887,7 @@
         <div class="wt-slide" data-slide="6">
           <div class="wt-slide-header">
             <h3>6. Your Hands-On Lab Roadmap</h3>
-            <p class="wt-subhead">Explore these four tangible steps in Module 1.</p>
+            <p class="wt-subhead">Four views in Module 1 — then the real model in Modules 3 and 4.</p>
           </div>
 
           <div class="wt-roadmap-grid">
@@ -483,6 +910,16 @@
               <span class="rm-num">View 4</span>
               <h4>Try It for Yourself</h4>
               <p>Type your own custom sentences and watch the processor calculate live!</p>
+            </div>
+            <div class="roadmap-card next">
+              <span class="rm-num">Jog · Module 3</span>
+              <h4>The Real Model</h4>
+              <p>A Rust MLP trained in your browser — real weights, real gradients, real trace.</p>
+            </div>
+            <div class="roadmap-card next">
+              <span class="rm-num">Run · Module 4</span>
+              <h4>The Artifact</h4>
+              <p>Export the trained model to ONNX, inspect it, and reload it in a standard runtime.</p>
             </div>
           </div>
 

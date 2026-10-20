@@ -520,13 +520,15 @@ pub const NEG_ADJ: [&amp;str; 12] = ["terrible", "slow", "overpriced", "rude", .
         </div>
         <div class="panel-body">
           <p class="chapter-lede">
-            This lab can explain the model. TROT can <em>run</em> it. Open any of these views and the
-            numbers you have been reading about become the numbers on screen.
+            The real forward pass runs <em>in this lab</em>, not on another site. Module 4 parses the
+            exported <code>.onnx</code> and executes it in JavaScript, right here. Use the first
+            button to jump to that runner, or open the Rust trainer if you want to retrain and
+            export the model yourself.
           </p>
           <div class="chapter-actions">
-            <a class="btn btn-accent" href="https://trot.livive.net/#panel-train" target="_blank" rel="noopener">Train it live ↗</a>
-            <a class="btn btn-primary" href="https://trot.livive.net/#panel-weights" target="_blank" rel="noopener">Inspect the weight grid ↗</a>
-            <a class="btn btn-secondary" href="https://trot.livive.net/#panel-trace" target="_blank" rel="noopener">Trace a prediction ↗</a>
+            <button class="btn btn-accent" data-goto-module="run">Run the ONNX in this lab →</button>
+            <a class="btn btn-primary" href="https://trot.livive.net/#panel-train" target="_blank" rel="noopener">Train the model ↗</a>
+            <a class="btn btn-secondary" href="https://trot.livive.net/#panel-weights" target="_blank" rel="noopener">Inspect the weight grid ↗</a>
             <a class="btn btn-secondary" href="https://github.com/jpeckenpaugh/trot-livive-net" target="_blank" rel="noopener">Read the source ↗</a>
           </div>
         </div>
@@ -619,6 +621,60 @@ let sigmoid = node("Sigmoid", &amp;["z2"], &amp;["probability"], &amp;[]);</code
               <code>W1</code>, <code>b1</code>, <code>W2</code>, <code>b2</code> — the same names as
               the struct fields, so the file is readable in Netron.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="onnx-runner">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="icon">▶</span>
+            <h2>Run the ONNX file — right here</h2>
+          </div>
+          <span class="status-pill" id="onnx-status">reading model…</span>
+        </div>
+        <div class="panel-body">
+          <p class="chapter-lede">
+            This page reads the actual <code>trot.onnx</code> bytes, parses the four-node graph, and
+            executes it in JavaScript — no ONNX Runtime, no CDN, no iframe. Type a sentence and watch
+            <code>Gemm → Tanh → Gemm → Sigmoid</code> run against the real weights.
+          </p>
+
+          <div class="onnx-runner-grid">
+            <div class="onnx-controls">
+              <label class="field-label" for="onnx-input">Sentence to score</label>
+              <div class="input-row">
+                <input type="text" id="onnx-input" value="the staff was friendly" autocomplete="off" />
+                <button class="btn btn-primary" id="btn-onnx-run">Run ONNX</button>
+              </div>
+
+              <div class="chip-row onnx-presets">
+                <button class="chip chip-btn" data-onnx-preset="good service and friendly staff">positive preset</button>
+                <button class="chip chip-btn" data-onnx-preset="rude staff and slow delivery">negative preset</button>
+                <button class="chip chip-btn" data-onnx-preset="the package was delivered on tuesday">factual preset</button>
+              </div>
+
+              <div class="onnx-verdict">
+                <div class="onnx-prob" id="onnx-prob">—</div>
+                <div class="onnx-prob-label">P(positive) from the exported graph</div>
+              </div>
+
+              <div class="onnx-token-list" id="onnx-tokens"></div>
+
+              <div class="chapter-actions">
+                <button class="btn btn-secondary" id="btn-onnx-download">Download this .onnx</button>
+                <button class="btn btn-secondary" id="btn-onnx-verify">Verify 25 predictions</button>
+              </div>
+              <p class="chapter-note" id="onnx-verify-note">
+                Reference predictions come from the Rust core. The check runs the same 25 vectors
+                through the JS executor and compares every value.
+              </p>
+            </div>
+
+            <div class="onnx-inspect">
+              <div class="onnx-graph" id="onnx-graph" aria-label="Parsed ONNX graph"></div>
+              <div class="onnx-steps" id="onnx-steps" aria-label="Forward-pass intermediate values"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -947,6 +1003,8 @@ let sigmoid = node("Sigmoid", &amp;["z2"], &amp;["probability"], &amp;[]);</code
     </div>
   </dialog>
 
+  <script src="onnx-data.js"></script>
+  <script src="onnx.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

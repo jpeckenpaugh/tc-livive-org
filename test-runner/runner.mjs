@@ -108,6 +108,26 @@ try {
   await snap(page, '06-live-math-inspector.png');
   record('view 4 custom user evaluation verified');
 
+  // Module 4: in-page ONNX executor
+  await page.locator('#tab-module-run').click();
+  await page.waitForFunction(
+    () => {
+      const status = document.getElementById('onnx-status');
+      return status && /bytes/.test(status.textContent);
+    },
+    { timeout: 5000 }
+  );
+  const probability = (await page.locator('#onnx-prob').textContent()) || '';
+  assert(/^\d+(\.\d+)?%$/.test(probability.trim()), `ONNX probability missing: ${probability}`);
+  await page.locator('#btn-onnx-verify').click();
+  const verification = (await page.locator('#onnx-verify-note').textContent()) || '';
+  assert(
+    verification.includes('predictions match the Rust core'),
+    `ONNX verification failed: ${verification}`
+  );
+  await snap(page, '07-onnx-runner.png');
+  record('module 4 in-page ONNX executor verified');
+
   if (showcaseMode) {
     await page.waitForTimeout(3000);
   }

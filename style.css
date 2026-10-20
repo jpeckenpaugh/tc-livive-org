@@ -1414,3 +1414,119 @@ a.btn { text-decoration: none; }
   .nsr-copy { flex: 0 1 auto; width: 100%; }
   .nsr-actions { width: 100%; }
 }
+
+/* ============================================================
+   In-page ONNX runner (Module 4)
+   ============================================================ */
+
+.chapter-lede code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #7dd3fc;
+}
+
+.onnx-runner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+  .onnx-runner-grid { grid-template-columns: 1fr; }
+}
+
+.onnx-controls { display: flex; flex-direction: column; gap: 0.6rem; }
+.onnx-presets { margin: 0; }
+
+.chip-btn {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  color: #bae6fd;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.7rem;
+}
+.chip-btn:hover {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: rgba(14, 165, 233, 0.6);
+}
+
+.onnx-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+.onnx-prob { font-size: 2rem; font-weight: 800; line-height: 1; color: #38bdf8; }
+.onnx-prob.pos { color: var(--pos-color); }
+.onnx-prob.neg { color: var(--neg-color); }
+.onnx-prob-label { font-size: 0.72rem; color: var(--text-dim); }
+
+.onnx-token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-height: 1.8rem;
+}
+.chip-hit {
+  color: #bbf7d0;
+  background: var(--pos-bg);
+  border-color: var(--pos-border);
+}
+.chip-oov {
+  color: var(--text-dim);
+  background: rgba(100, 116, 139, 0.12);
+  border-color: rgba(100, 116, 139, 0.35);
+}
+
+.onnx-inspect { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.onnx-graph {
+  background: #070c17;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.onnx-graph-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0.7rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.55);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.onnx-graph-row:last-child { border-bottom: none; }
+.onnx-op { color: #7dd3fc; font-weight: 700; }
+
+.onnx-steps { display: flex; flex-direction: column; gap: 0.45rem; }
+.onnx-step {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
+}
+.onnx-step-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  margin-bottom: 0.25rem;
+}
+.onnx-step-values { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.onnx-step-values span {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #e2e8f0;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}

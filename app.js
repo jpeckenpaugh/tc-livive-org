@@ -601,6 +601,7 @@ function init() {
   setupCrawlEventListeners();
   crawlLab.setStep(1);
   renderCrawlView();
+  if (window.TrotOnnx) window.TrotOnnx.init();
 }
 
 window.addEventListener('DOMContentLoaded', init);
